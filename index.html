@@ -113,6 +113,10 @@ details ul{margin:8px 0 0;padding-left:20px;display:grid;gap:4px}
 .lgdot{width:10px;height:10px;border-radius:50%;border:1px solid #000;display:inline-block}
 .lgdot.ready{background:#6dd66a}
 .lgdot.done{background:#666}
+.mn .id{font-weight:800}
+.mn small{font-size:60%;font-weight:600;align-self:flex-end;margin-left:1px;margin-bottom:12%}
+.tg{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:1px solid #000;font-size:12px;font-weight:800;margin-right:6px;flex:none}
+.cell.hl{outline:3px solid #fff;outline-offset:-3px;z-index:2}
 body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 </style>
 </head>
@@ -126,7 +130,7 @@ body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 <section id="game" hidden>
   <div class="row" style="justify-content:space-between"><h1>สงครามอิทธิพล</h1><button class="btn" id="quit">กลับหน้าตั้งค่า</button></div>
   <div class="layout">
-    <div class="boardwrap"><div class="bframe"><i></i><div class="axis ax" id="ax"></div><div class="axis ay" id="ay"></div><div id="board" class="board"></div></div><div class="legend"><span><i class="mn" style="--c:#c9a24d;--t:#111">3</i>ตัวเลข = เลเวลลูกน้อง (1 ถึง 5)</span><span><i class="lgdot ready"></i>ยังไม่ได้เดิน</span><span><i class="lgdot done"></i>เดินแล้ว</span><span><i class="mn foe" style="--c:#555;--t:#fff">?</i>ลูกน้องศัตรูที่มองเห็น</span><span>สีบนช่อง = เจ้าของพื้นที่ ขอบหนา = ฐานหลัก</span></div></div>
+    <div class="boardwrap"><div class="bframe"><i></i><div class="axis ax" id="ax"></div><div class="axis ay" id="ay"></div><div id="board" class="board"></div></div><div class="legend"><span><i class="mn" style="--c:#c9a24d;--t:#111"><b class="id">A</b><small>3</small></i>ตัวอักษร = ลูกน้องคนนั้น เลขเล็ก = เลเวล (1 ถึง 5)</span><span><i class="lgdot ready"></i>ยังไม่ได้เดิน</span><span><i class="lgdot done"></i>เดินแล้ว</span><span><i class="mn foe" style="--c:#555;--t:#fff">?</i>ลูกน้องศัตรูที่มองเห็น</span><span>สีบนช่อง = เจ้าของพื้นที่ ขอบหนา = ฐานหลัก</span></div></div>
     <aside class="side" id="side"></aside>
   </div>
 </section>
@@ -182,7 +186,7 @@ const botName=()=>NAMES[rnd(NAMES.length)];
 
 function buildDeck(){const d=[];CARDS.forEach(c=>{for(let i=0;i<c.k*2;i++)d.push(c)});return shuffle(d)}
 function draw(p,n){for(let i=0;i<n;i++){if(!G.deck.length){G.deck=shuffle(G.discard);G.discard=[]}if(!G.deck.length)return;p.hand.push(G.deck.pop())}}
-function addMinion(p,name,pos){const m={id:G.mid++,name:clip(name)||botName(),owner:p.id,pos,lvl:1,wins:0,moved:false};G.minions.push(m);return m}
+function addMinion(p,name,pos){const used=new Set(mine(p).map(x=>x.tag)),tag=[...'ABCDEFGHJKLMNPQRSTUVWXYZ'].find(c=>!used.has(c))||'*';const m={id:G.mid++,tag,name:clip(name)||botName(),owner:p.id,pos,lvl:1,wins:0,moved:false};G.minions.push(m);return m}
 function initGame(cfg){
  const corners=cfg.seats.length===2?[0,N*N-1]:[0,N-1,N*(N-1),N*N-1];
  const teams=cfg.mode==='2v2'?[0,1,1,0]:cfg.seats.map((_,i)=>i);
@@ -315,6 +319,7 @@ async function rps(A,D){
 /* ---------- rendering ---------- */
 const tint=(h,a)=>{const n=parseInt(h.slice(1),16);return'rgba('+(n>>16)+','+((n>>8)&255)+','+(n&255)+','+a+')'};
 const txtCol=h=>{const n=parseInt(h.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255;return(r*299+g*587+b*114)/1000>140?'#111':'#fff'};
+const tagChip=m=>{const h=COLORS[G.players[m.owner].color].h;return'<span class="tg" style="background:'+h+';color:'+txtCol(h)+'">'+m.tag+'</span>'};
 function visible(v){
  const mineSet=new Map(),foe=new Set();
  if(!v)return{mineSet,foe};
@@ -341,7 +346,7 @@ function render(){
   let cls='cell'+(c.b>=0?' base':'')+(tg.has(i)?' tg':'')+(selM&&selM.pos===i?' sel':'')+(o?' own':'');
   if(m&&m.owner===(v&&v.id)&&!m.moved&&G.actor===(v&&v.id))cls+=' mine';
   let inner='';
-  if(m){const pc=COLORS[G.players[m.owner].color].h;inner='<i class="mn'+(m.moved&&m.owner===G.actor?' done':'')+'" style="--c:'+pc+';--t:'+txtCol(pc)+'">'+m.lvl+(m.owner===G.actor?'<b class="st '+(m.moved?'done':'ready')+'"></b>':'')+'</i>'}
+  if(m){const pc=COLORS[G.players[m.owner].color].h;inner='<i class="mn'+(m.moved&&m.owner===G.actor?' done':'')+'" style="--c:'+pc+';--t:'+txtCol(pc)+'"><b class="id">'+m.tag+'</b><small>'+m.lvl+'</small>'+(m.owner===G.actor?'<b class="st '+(m.moved?'done':'ready')+'"></b>':'')+'</i>'}
   else if(foe.has(i)){const mm=G.minions.find(x=>x.pos===i),pc=COLORS[G.players[mm.owner].color].h;inner='<i class="mn foe" style="--c:'+pc+';--t:'+txtCol(pc)+'">?</i>'}
   h+='<div class="'+cls+'" data-i="'+i+'"'+(o?' style="background:'+tint(COLORS[o.color].h,c.b>=0?.92:.6)+'"':'')+'>'+inner+'</div>';
  }
@@ -357,13 +362,16 @@ function renderSide(v){
   (v&&G.actor===v.id?'<button class="btn pri" data-act="end"'+(G.busy?' disabled':'')+'>จบเทิร์น</button>':'')+'</div>';
  h+='<div class="pls">'+G.players.map(p=>'<div class="pl'+(p.id===G.turn?' cur':'')+(p.alive?'':' dead')+'"><div class="row" style="justify-content:space-between"><span><span class="dot" style="background:'+COLORS[p.color].h+'"></span><b>'+esc(p.name)+'</b> <span class="mute">'+bo(p.boss)+(G.mode==='2v2'?' · ทีม '+(p.team?'ข':'ก'):'')+'</span></span><span class="mute">'+(p.alive?'พื้นที่ '+terr(p)+' ช่อง (รายได้ +'+Math.floor(terr(p)/INC)+')':'ตกรอบ')+'</span></div>'+resBlock(p)+'</div>').join('')+'</div>';
  if(v&&v.alive){
-  h+='<div><h2>ลูกน้องของ '+esc(v.name)+'</h2><div class="ml">'+mine(v).map(m=>'<button class="btn mrow'+(G.sel===m.id?' on':'')+'" data-act="sel" data-id="'+m.id+'"'+(G.actor!==v.id||m.moved?' disabled':'')+'><span>'+esc(m.name)+' · '+coord(m.pos)+' · เลเวล '+m.lvl+(m.lvl<5?' ('+m.wins+'/'+need(m)+')':' สูงสุด')+'</span><span class="mute">'+(m.moved?'เดินแล้ว':'พร้อมเดิน')+'</span></button>').join('')+'</div></div>';
+  h+='<div><h2>ลูกน้องของ '+esc(v.name)+'</h2><div class="ml">'+mine(v).map(m=>'<button class="btn mrow'+(G.sel===m.id?' on':'')+'" data-act="sel" data-id="'+m.id+'"'+(G.actor!==v.id||m.moved?' disabled':'')+'><span>'+tagChip(m)+esc(m.name)+' · '+coord(m.pos)+' · เลเวล '+m.lvl+(m.lvl<5?' ('+m.wins+'/'+need(m)+')':' สูงสุด')+'</span><span class="mute">'+(m.moved?'เดินแล้ว':'พร้อมเดิน')+'</span></button>').join('')+'</div></div>';
   h+='<div><h2>การ์ดในมือ ('+v.hand.length+')</h2><div class="hand">'+(v.hand.length?v.hand.map((c,i)=>'<button class="card" data-act="card" data-i="'+i+'"'+(G.actor!==v.id||G.busy||!canPay(v,c.cost)?' disabled':'')+'><b>'+c.n+'</b><span class="cost">'+RK.filter(k=>c.cost[k]).map(k=>'<span class="chip" style="color:'+RC[k]+'">'+RN[k]+' '+c.cost[k]+'</span>').join('')+'</span><small>'+c.d+'</small></button>').join(''):'<span class="mute">ไม่มีการ์ด</span>')+'</div></div>';
  }
  h+='<div><h2>บันทึกเหตุการณ์</h2><div class="log">'+G.log.slice(0,14).map(t=>'<div>'+esc(t)+'</div>').join('')+'</div></div>';
  $('side').innerHTML=h;
 }
+function hl(id){document.querySelectorAll('#board .hl').forEach(x=>x.classList.remove('hl'));if(id==null)return;const m=G&&G.minions.find(x=>x.id===id);if(m){const c=$('board').children[m.pos];if(c)c.classList.add('hl')}}
 function bindGame(){
+ $('side').onmouseover=e=>{const b=e.target.closest('[data-id]');hl(b?+b.dataset.id:null)};
+ $('side').onmouseout=()=>hl(null);
  $('board').onclick=async e=>{
   const c=e.target.closest('.cell');if(!c||!G||G.busy||G.actor<0)return;
   const v=G.players[G.actor];if(G.viewer!==v.id||v.type!=='human')return;
@@ -391,7 +399,7 @@ async function playCard(p,idx,bot){
   const ms=mine(p).filter(m=>m.lvl<5);
   if(!ms.length){if(!bot)await modal(sheet('ใช้ไม่ได้','ลูกน้องทุกคนเลเวลสูงสุดแล้ว',btn('ตกลง','ok')));return false}
   if(bot)tgt=ms.sort((a,b)=>b.lvl-a.lvl)[0];
-  else{const v=await pickList('เลือกลูกน้องที่จะฝึก',ms.map(m=>({l:esc(m.name),v:m.id,d:'เลเวล '+m.lvl})));if(v==null)return false;tgt=ms.find(m=>m.id===+v)}
+  else{const v=await pickList('เลือกลูกน้องที่จะฝึก',ms.map(m=>({l:'['+m.tag+'] '+esc(m.name),v:m.id,d:'เลเวล '+m.lvl+' · ตำแหน่ง '+coord(m.pos)})));if(v==null)return false;tgt=ms.find(m=>m.id===+v)}
  }
  if(c.t==='steal'){
   if(!foes.length)return false;
