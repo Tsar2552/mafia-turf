@@ -167,6 +167,15 @@ details ul{margin:8px 0 0;padding-left:20px;display:grid;gap:4px}
 .cs.cur .ring{box-shadow:0 0 0 2px #fff,0 0 14px 2px var(--rc)}
 .cs.dead{opacity:.4;filter:grayscale(1)}
 @media (max-width:480px){.ring{width:46px;height:46px;padding:2px}.ring.xl{width:88px;height:88px;padding:3px}.ldr{grid-template-columns:96px minmax(0,1fr)}.cs .ci b{font-size:13px}}
+.prof{display:grid;grid-template-columns:minmax(150px,240px) minmax(0,1fr);gap:18px;align-items:start}
+.prof .pt{height:420px}
+.prof dl{margin:0;display:grid;gap:10px;min-width:0}
+.fr{display:grid;grid-template-columns:120px minmax(0,1fr);gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.fr dt{color:var(--brass);font-family:var(--display);font-size:14px}
+.fr dd{margin:0;min-width:0}
+.lnk{font:inherit;color:var(--fg);background:none;border:1px solid var(--line);border-radius:30px;padding:3px 12px 3px 4px;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.lnk:hover{border-color:var(--brass)}
+@media (max-width:640px){.prof{grid-template-columns:1fr}.prof .pt{height:340px;max-width:240px;margin:0 auto}.fr{grid-template-columns:1fr;gap:2px}}
 body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 </style>
 </head>
@@ -176,6 +185,7 @@ body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 <section id="menu" class="stack"></section>
 <section id="rules" class="stack" hidden></section>
 <section id="codex" class="stack" hidden></section>
+<section id="lore" class="stack" hidden></section>
 <section id="setup" class="stack" hidden></section>
 <section id="game" hidden>
   <div class="row" style="justify-content:space-between"><div class="row"><div class="mark" role="img" aria-label="Mafia Turf"></div><h1>สงครามอิทธิพล</h1></div><button class="btn" id="quit">กลับหน้าตั้งค่า</button></div>
@@ -655,19 +665,50 @@ function bindSetup(){
 /* ---------- menu / rules / codex ---------- */
 const coord=i=>'ABCDEFGHIJKLMNOPQRST'[Math.floor(i/N)]+(i%N+1);
 function buildAxis(){$('ax').innerHTML=Array.from({length:N},(_,i)=>'<span>'+(i+1)+'</span>').join('');$('ay').innerHTML=Array.from({length:N},(_,i)=>'<span>'+'ABCDEFGHIJKLMNOPQRST'[i]+'</span>').join('')}
-const SCREENS=['menu','rules','codex','setup'];
+/* ---------- character lore ---------- */
+const LORE={
+ banker:{name:'เจ้าพ่อดอนทุน (ทุนทรัพย์ มั่งคั่งวงศ์)',age:58,sex:'ชาย',job:'ประธานบริษัทสินเชื่อและนายหน้าอสังหาริมทรัพย์',
+  like:'ซิการ์ นาฬิกาพกโซ่ทอง ดอกเบี้ยที่ตรงเวลา',hate:'หนี้เสีย คนที่ผิดนัดชำระ ความสิ้นเปลืองที่ไม่สร้างรายได้',rival:'nerve',
+  bio:'เริ่มจากเจ้ามือปล่อยกู้ในตรอกเล็ก ๆ ก่อนเติบโตเป็นนายทุนที่ทั้งเมืองเป็นหนี้ เขาเชื่อว่าเงินซื้อได้ทุกอย่างยกเว้นความภักดี จึงเก็บสมุดบัญชีไว้ใกล้ตัวมากกว่าปืน'},
+ chief:{name:'เจ้าพ่อพลพรรค (วิชัย พลเดช)',age:34,sex:'ชาย',job:'เจ้าของบริษัทจัดหางานและรับเหมาก่อสร้าง',
+  like:'ระเบียบวินัย รายงานที่ตรงเวลา ทีมที่ยืนเรียงเป็นแถว',hate:'ข้ออ้าง ความมักง่าย คนที่มาสาย',rival:'tiger',
+  bio:'อดีตนายทหารยศน้อยที่ลาออกมาตั้งสายส่งแรงงานให้ทุกไซต์งานในเมือง ลูกน้องเรียกเขาว่า “หัวหน้า” โดยไม่ต้องสั่งเสียงดัง ปลอกแขนสีแดงคือเครื่องหมายว่าคนคนนั้นเขารับรองเอง'},
+ fixer:{name:'เจ๊เส้นสาย (ลาวัลย์ สายสัมพันธ์)',age:45,sex:'หญิง',job:'เจ้าของห้องเสื้อชุดไทยจีนสั่งตัดและร้านน้ำชา',
+  like:'ไพ่นกกระจอก น้ำชาจีน เรื่องซุบซิบจากทุกซอย',hate:'คนไม่รักษาสัญญา ความลับที่รั่วไหล คนที่พูดเสียงดังในร้านของเธอ',rival:'hawk',
+  bio:'ห้องเสื้อของเธอคือที่ที่คนใหญ่คนโตมาวัดตัวและกลับไปพร้อมความลับที่เธอจดไว้ในใจ เธอรู้ว่าใครรู้จักใคร และแค่นั้นก็พอจะเปิดประตูได้ทุกบาน'},
+ tiger:{name:'เฮียเสือสนาม (กิตติ เสือสนาม)',age:38,sex:'ชาย',job:'เจ้าของยิมมวยและเวทีชกนอกระบบ',
+  like:'การชกที่ยังไม่รู้ผล ผ้าพันมือผืนใหม่ เหล้าขาวหลังชนะ',hate:'คนปากกล้าที่ไม่กล้าขึ้นเวที ผลเสมอ การนับคะแนนที่ไม่ตรงไปตรงมา',rival:'chief',
+  bio:'ขึ้นมาจากสังเวียนเลือดสาด แผลเป็นทุกรอยคือบทเรียนที่เขาเล่าให้ลูกน้องฟัง เขาเชื่อว่าอิทธิพลต้องแย่งมาด้วยมือ และสอนให้คนของเขาเก่งขึ้นทุกครั้งที่ชนะ'},
+ hawk:{name:'บอสตาเหยี่ยว (ธีรภัทร เพ่งพิศ)',age:29,sex:'ชาย',job:'เจ้าของบริษัทที่ปรึกษาด้านความปลอดภัย',
+  like:'กาแฟดำไม่ใส่น้ำตาล ความเงียบ แผนที่เมืองฉบับเก่า',hate:'ความประมาท ที่ที่แสงจ้า คนที่ถามซ้ำ',rival:'fixer',
+  bio:'อดีตมือปืนฝึกหัดที่แม่นจนถูกซื้อตัวไปทำงานให้หลายแก๊งก่อนตั้งแก๊งของตัวเอง เขาไม่ชอบเสียงดังและไม่เคยยิงนัดที่สอง เพราะเชื่อว่าการมองให้ขาดก่อนก็ชนะไปครึ่งหนึ่งแล้ว'},
+ nerve:{name:'น้าใจเด็ด (สมศักดิ์ ใจกล้า)',age:52,sex:'ชาย',job:'เจ้าของค่ายมวยไทยและร้านชาริมคลอง',
+  like:'ชาร้อนยามเช้า มวยตู้ ลูกน้องที่พูดความจริง',hate:'คนทรยศ การทิ้งพวกพ้อง เสียงปืนยามเช้า',rival:'banker',
+  bio:'ผ่านการล้างบางของแก๊งเก่ามาหลายรอบจนรู้ว่าการถอยไม่ใช่ความอาย คนในย่านเรียกเขาว่า “น้า” เพราะดูแลเด็กทุกคนเหมือนญาติ และเขาไม่เคยยอมให้ใครเสียที่ยืนเพียงเพราะต้องถอยออกมา'}
+};
+let loreSel='nerve';
+function renderLore(){
+ const L=LORE[loreSel],b=BOSSES.find(x=>x.id===loreSel),r=BOSSES.find(x=>x.id===L.rival);
+ const picker='<div class="row">'+BOSSES.map(x=>'<button class="avb'+(x.id===loreSel?' on':'')+'" data-lore="'+x.id+'" title="'+x.n+'" aria-label="'+x.n+'"><span class="ring" style="--rc:#c9a24d"><span class="av '+x.id+'"></span></span></button>').join('')+'</div>';
+ const rows=[['ชื่อ',L.name],['อายุ',L.age+' ปี'],['เพศ',L.sex],['อาชีพบังหน้า',L.job],['ความชอบ',L.like],['สิ่งที่เกลียด',L.hate],
+  ['อริ','<button class="lnk" data-lore="'+r.id+'"><span class="ring sm" style="--rc:#c9a24d"><span class="av '+r.id+'"></span></span>'+r.n+'</button>'],
+  ['ความสามารถ',b.d],['ประวัติโดยย่อ',L.bio]];
+ $('lore').innerHTML=backBtn+'<div><h1>ประวัติตัวละคร</h1></div>'+picker+'<div class="prof"><div class="pt '+loreSel+'" role="img" aria-label="'+b.n+'"></div><dl>'+rows.map(x=>'<div class="fr"><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>').join('')+'</dl></div>';
+}
+const SCREENS=['menu','rules','codex','lore','setup'];
 let codexTab='cards';
 function show(id){
  SCREENS.forEach(s=>{$(s).hidden=s!==id});$('game').hidden=true;
  if(id==='menu')renderMenu();
  if(id==='rules')renderRules();
  if(id==='codex')renderCodex();
+ if(id==='lore')renderLore();
  if(id==='setup')renderSetup();
  window.scrollTo(0,0);
 }
 const backBtn='<div><button class="btn" data-go="menu">← กลับเมนู</button></div>';
 function renderMenu(){
- const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0]];
+ const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0],['lore','ประวัติตัวละคร','ชื่อ อายุ ความชอบ อริ อาชีพบังหน้า และประวัติโดยย่อของลีดเดอร์ทั้ง 6 คน',0]];
  $('menu').innerHTML='<div class="brand"><div class="logo" role="img" aria-label="Mafia Turf"></div><h1 class="hero">สงครามอิทธิพล</h1><p class="mute" style="max-width:52ch">ขยายอิทธิพลทีละช่อง สะสมกำลังคน ทรัพย์สิน และเส้นสายให้ครบอย่างละ 100 ก่อนใคร หรือล้อมฐานคู่แข่งให้จนมุม</p></div>'+
  '<div class="tiles">'+T.map(t=>'<button class="tile'+(t[3]?' pri':'')+'" data-go="'+t[0]+'"><b>'+t[1]+'</b><span>'+t[2]+'</span></button>').join('')+'</div>';
 }
@@ -707,7 +748,8 @@ function renderCodex(){
 function bindMenu(){
  document.body.addEventListener('click',e=>{
   const g=e.target.closest('[data-go]');if(g){show(g.dataset.go);return}
-  const t=e.target.closest('[data-tab]');if(t){codexTab=t.dataset.tab;renderCodex()}
+  const t=e.target.closest('[data-tab]');if(t){codexTab=t.dataset.tab;renderCodex();return}
+  const l=e.target.closest('[data-lore]');if(l){loreSel=l.dataset.lore;renderLore()}
  });
 }
 
