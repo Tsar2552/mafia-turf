@@ -242,6 +242,28 @@ div.btn.skill{cursor:default}
 .tturn{position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:50;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--c,var(--brass));border-radius:8px;padding:12px 22px;font-family:var(--display);font-size:clamp(18px,4.5vw,26px);box-shadow:0 6px 24px rgba(0,0,0,.5);animation:tt 2s ease forwards;max-width:92vw;text-align:center}
 @keyframes tt{0%{opacity:0;transform:translate(-50%,-14px)}12%,78%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
 @media (prefers-reduced-motion:reduce){.tturn{animation:none;opacity:1}}
+.rv{position:fixed;inset:0;z-index:60;background:rgba(8,6,4,.94);display:flex;flex-direction:column;align-items:center;gap:18px;padding:16px;overflow:auto}
+.rv>:first-child{margin-top:auto}.rv>:last-child{margin-bottom:auto}
+.rvh{margin:0;font-family:var(--display);font-size:20px;color:var(--brass)}
+.rvg{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:760px}
+.fc{perspective:800px;width:clamp(92px,26vw,128px);aspect-ratio:128/180;background:none;border:0;padding:0;cursor:pointer;font:inherit;color:var(--fg);animation:drop .55s var(--d,0ms) cubic-bezier(.2,1.3,.4,1) both}
+.fc:focus-visible{outline:2px solid var(--brass);outline-offset:4px;border-radius:10px}
+.fi{position:relative;display:block;width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s}
+.fc:hover:not(.open) .fi{transform:translateY(-4px) rotateY(8deg)}
+.fc.open .fi{transform:rotateY(180deg)}
+.ff{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:10px;display:grid}
+.fb{place-items:center;font-family:var(--display);font-size:44px;color:var(--brass);border:2px solid var(--brass);background:repeating-linear-gradient(45deg,#2a2218 0 6px,#1b1610 6px 12px);box-shadow:0 0 14px rgba(201,162,77,.35)}
+.fr{transform:rotateY(180deg);background:var(--panel);border:2px solid var(--rc);gap:3px;align-content:center;justify-items:center;text-align:center;padding:6px;font-size:12px}
+.fr b{font-size:13px;line-height:1.2}
+.fr small{color:var(--mute)}
+.fr .ring{width:54px;height:54px}
+.fc.open.rSR .fr{box-shadow:0 0 18px var(--rc)}
+.fc.open.rSSR .fr{box-shadow:0 0 34px var(--rc),inset 0 0 18px rgba(240,180,41,.25);animation:glow 1.2s ease-in-out infinite alternate}
+.fc.un.open .fr{background:linear-gradient(#2a2418,var(--panel))}
+.rva{justify-content:center}
+@keyframes drop{0%{opacity:0;transform:translateY(-60px) scale(.7)}100%{opacity:1;transform:none}}
+@keyframes glow{to{box-shadow:0 0 48px var(--rc),inset 0 0 24px rgba(240,180,41,.4)}}
+@media (prefers-reduced-motion:reduce){.fc{animation:none}.fi{transition:none}.fc.open.rSSR .fr{animation:none}}
 body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 </style>
 </head>
@@ -1353,15 +1375,32 @@ function renderGacha(){
  '<p class="onmsg" role="status">'+esc(gachaMsg)+'</p>'+rs+
  '<div><h2>ลีดเดอร์ในกาชา ('+gachaPool().length+' คน)</h2><p class="mute">โอกาสต่อครั้ง: '+tiers.map(t=>RAR[t]+' '+pctTxt(GACHA_W[t]/tot*100)).join(' · ')+' · ถ้าสุ่มได้ลีดเดอร์ที่ปลดล็อกแล้ว จะคืน '+DUP_REFUND+' ตัง</p><div class="ggrid">'+cards+'</div></div>'+backBtn;
 }
+function revealPulls(res){
+ return new Promise(done=>{
+  const ov=document.createElement('div');ov.className='rv';ov.setAttribute('role','dialog');ov.setAttribute('aria-label','ผลการสุ่ม');
+  const front=x=>'<span class="ring" style="--rc:'+RARC[x.b.rar]+'"><span class="av '+x.b.id+'"></span></span><b>'+esc(x.b.n)+'</b>'+rarTag(x.b)+'<small>'+(x.dup?'ซ้ำ คืน '+DUP_REFUND+' ตัง':x.un?'ปลดล็อกแล้ว!':'+'+x.sh+' เศษ')+'</small>';
+  ov.innerHTML='<p class="rvh" aria-live="polite">แตะการ์ดเพื่อเปิด</p><div class="rvg">'+res.map((x,i)=>'<button class="fc r'+x.b.rar+(x.un?' un':'')+'" style="--d:'+(i*90)+'ms;--rc:'+RARC[x.b.rar]+'" aria-label="การ์ดใบที่ '+(i+1)+' ยังไม่เปิด"><span class="fi"><span class="ff fb">?</span><span class="ff fr">'+front(x)+'</span></span></button>').join('')+'</div><div class="row rva"><button class="btn" data-x="all">เปิดทั้งหมด</button><button class="btn pri" data-x="done">เสร็จ</button></div>';
+  const openOne=(c,i)=>{if(c.classList.contains('open'))return;c.classList.add('open');c.setAttribute('aria-label','การ์ดใบที่ '+(i+1)+': '+res[i].b.n)};
+  ov.onclick=e=>{
+   const c=e.target.closest('.fc');
+   if(c){openOne(c,[...ov.querySelectorAll('.fc')].indexOf(c));return}
+   const x=e.target.closest('[data-x]');if(!x)return;
+   if(x.dataset.x==='all'){ov.querySelectorAll('.fc').forEach((c,i)=>setTimeout(()=>openOne(c,i),i*120))}
+   else{ov.remove();done()}
+  };
+  document.body.appendChild(ov);
+  const f0=ov.querySelector('.fc');if(f0&&f0.focus)f0.focus();
+ });
+}
 async function gachaAct(a){
  gachaMsg='';
  if(a==='p1'||a==='p10'){
   const n=a==='p10'?10:1,r=doPull(n);
-  if(!r)gachaMsg='ตังไม่พอ';else gachaRes=r;
+  if(!r)gachaMsg='ตังไม่พอ';else{await revealPulls(r);gachaRes=r}
  }else if(a==='claim'){
   const left=gachaPool().filter(b=>!isOwned(b.id));
   const v=await modal(sheet('เลือกลีดเดอร์ที่จะรับ','',left.map(b=>btn(esc(b.n)+' '+rarTag(b),b.id,{sub:b.d})).join('')+btn('ยกเลิก','__x')),false,true);
-  if(v.v!=='__x'&&doClaim(v.v)){gachaRes=[{b:BOSSES.find(x=>x.id===v.v),un:1,sh:0}];gachaMsg='รับลีดเดอร์ตามการันตีแล้ว'}
+  if(v.v!=='__x'&&doClaim(v.v)){gachaRes=[{b:BOSSES.find(x=>x.id===v.v),un:1,sh:0}];await revealPulls(gachaRes);gachaMsg='รับลีดเดอร์ตามการันตีแล้ว'}
  }
  renderGacha();
 }
