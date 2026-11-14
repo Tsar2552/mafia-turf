@@ -288,7 +288,7 @@ const BOSSES=[
  {id:'god',n:'เจ้าพ่อก๊อต',rar:'SR',kind:'active',sn:'เลื่อนขั้น',cd:5,d:'เลือกลูกน้อง 1 คน เลเวล +1 ใช้ซ้ำได้ทุก 5 เทิร์น'},
  {id:'heart',n:'ซ้อฮาร์ต',rar:'SR',kind:'active',sn:'ข่มขวัญ',cd:3,d:'เลือกคู่แข่ง 1 คน ทรัพยากรชนิดที่เขามีมากที่สุดลด 3 ใช้ซ้ำได้ทุก 3 เทิร์น'},
  {id:'copy',n:'ลุงก๊อป',rar:'SR',kind:'active',sn:'ลอกการ์ด',cd:4,d:'ได้สำเนาการ์ดใบล่าสุดที่คู่แข่งใช้เข้ามือ และใช้ใบนั้นได้ฟรี ใช้ซ้ำได้ทุก 4 เทิร์น'},
- {id:'peach',n:'มาดาร์มพีช',rar:'SSR',kind:'react',sn:'เจรจา',cd:4,d:'ตอนปะทะ เลือก "เจรจา" แทนสู้หรือหนี ทั้งสองฝ่ายถอยโดยไม่เสียพื้นที่และได้เส้นสายคนละ +1 ใช้ได้ทุก 4 เทิร์น'},
+ {id:'peach',n:'มาดามพีช',rar:'SSR',kind:'react',sn:'เจรจา',cd:4,d:'ตอนปะทะ เลือก "เจรจา" แทนสู้หรือหนี ทั้งสองฝ่ายถอยโดยไม่เสียพื้นที่และได้เส้นสายคนละ +1 ใช้ได้ทุก 4 เทิร์น'},
  {id:'booze',n:'นายหัวสุรา',rar:'SSR',kind:'active',sn:'เหล้าเลี้ยงทหาร',cd:8,d:'เลือกลูกน้อง 1 คนที่เดินไปแล้ว เดินได้อีก 1 ครั้ง ใช้ซ้ำได้ทุก 8 เทิร์น'}
 ];
 const CARDS=[
@@ -872,7 +872,7 @@ Object.assign(LORE,{
  copy:{name:'ลุงก๊อป (กอบกิจ ลอกเลียน)',age:58,sex:'ชาย',job:'เจ้าของร้านถ่ายเอกสารและร้านทำกุญแจแถวท่าเรือ',
   like:'ซิการ์เก่า ๆ ผ้าโพกหัวสีแดง เรื่องที่คนอื่นลองมาแล้ว',hate:'คนคิดช้า คนไม่ยอมแบ่งสูตร',rival:'booze',
   bio:'ไม่ชอบคิดอะไรใหม่ แต่จำได้ทุกอย่างที่คนอื่นทำสำเร็จ ใครได้ผลดีวันนี้ พรุ่งนี้เขาจะมีวิธีเดียวกันอยู่ในมือ'},
- peach:{name:'มาดาร์มพีช (พีชรดา บุปผาทอง)',age:33,sex:'หญิง',job:'เจ้าของสปาและห้องรับรองแขกวีไอพี',
+ peach:{name:'มาดามพีช (พีชรดา บุปผาทอง)',age:33,sex:'หญิง',job:'เจ้าของสปาและห้องรับรองแขกวีไอพี',
   like:'น้ำหอมกลิ่นพีช ชาดอกไม้ ข้อตกลงที่ทุกคนยิ้มได้',hate:'ความรุนแรงในห้องรับแขก คนไม่รู้จักมารยาท',rival:'fire',
   bio:'ไม่เคยยกเสียง แต่ไม่เคยแพ้การเจรจา เธอเชื่อว่าสงครามที่ไม่ต้องเริ่มคือสงครามที่ชนะไปแล้ว และรับค่าเหนื่อยเป็นไมตรีเสมอ'},
  booze:{name:'นายหัวสุรา (สุรพล ทหารเจริญ)',age:57,sex:'ชาย',job:'เจ้าของโรงกลั่นสุราและค่ายฝึกอดีตทหาร',
@@ -1266,17 +1266,17 @@ const coinHtml=n=>RI('w')+'<b>'+n+'</b> ตัง';
 /* ผลเกม: won=true ชนะ, false แพ้, null เสมอ */
 function applyResult(won){
  if(won===null||won===undefined)return{d:0,t:'เสมอ ตังไม่เปลี่ยน'};
- const before=SAVE.coins;SAVE.coins=Math.max(0,SAVE.coins+(won?WIN_COIN:-LOSE_COIN));persist();
+ const before=SAVE.coins;SAVE.coins+=won?WIN_COIN:LOSE_COIN;persist();
  const d=SAVE.coins-before;
- return{d,t:won?'ชนะ ได้ +'+d+' ตัง':'แพ้ เสีย '+(-d)+' ตัง'};
+ return{d,t:won?'ชนะ ได้ +'+d+' ตัง':'แพ้ ได้ +'+d+' ตัง'};
 }
 const resultHtml=r=>'<p class="reward">'+RI('w')+r.t+' · คงเหลือ '+SAVE.coins+' ตัง</p>';
 function markPlaying(){SAVE.pending=1;persist()}
 function clearPlaying(){if(SAVE.pending){SAVE.pending=0;persist()}}
 async function settlePending(){
  if(!SAVE.pending)return;
- SAVE.pending=0;const r=applyResult(false);
- await modal(sheet('เกมที่แล้วไม่ได้เล่นจนจบ','<p>ออกจากเกมก่อนจบถือว่าแพ้</p>'+resultHtml(r),btn('ตกลง','ok',{pri:1})),true);
+ SAVE.pending=0;persist();
+ await modal(sheet('เกมที่แล้วไม่ได้เล่นจนจบ','<p>ออกจากเกมก่อนจบ จึงไม่ได้รับตังจากเกมนั้น</p>',btn('ตกลง','ok',{pri:1})),true);
 }
 /* ล็อกอินรายวัน */
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -1333,7 +1333,7 @@ function renderGacha(){
  }).join('');
  const tiers=Object.keys(GACHA_W),tot=Object.values(GACHA_W).reduce((a,c)=>a+c,0);
  $('gacha').innerHTML=backBtn+'<div><h1>กาชาเศษลีดเดอร์</h1><p class="mute" style="max-width:62ch">สุ่มเก็บเศษของลีดเดอร์ใหม่ รวมครบ '+UNLOCK_SHARDS+' เศษเพื่อปลดล็อก แต่ละครั้งได้ '+SHARDS_PER_PULL+' เศษ ลีดเดอร์ที่แรร์กว่าไม่ได้แรงกว่า แต่มีสกิลที่ใช้พลิกแพลงได้มากกว่า</p></div>'+
- '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ −'+LOSE_COIN+' ตัง ทุกโหมด</span></div>'+
+ '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ +'+LOSE_COIN+' ตัง ทุกโหมด</span></div>'+
  '<div class="row"><button class="btn pri" data-g="p1"'+(SAVE.coins<PULL_COST?' disabled':'')+'>สุ่ม ×1<small>'+PULL_COST+' ตัง</small></button><button class="btn pri" data-g="p10"'+(SAVE.coins<PULL10_COST?' disabled':'')+'>สุ่ม ×10<small>'+PULL10_COST+' ตัง (ลดจาก '+PULL_COST*10+')</small></button></div>'+
  '<div class="pity"><div class="row" style="justify-content:space-between"><span>การันตีเลือกตัวเอง: สุ่มครบ '+PITY+' ครั้ง</span><b>'+Math.min(SAVE.pity,PITY)+'/'+PITY+(SAVE.pity>PITY?' (+'+(SAVE.pity-PITY)+')':'')+'</b></div><div class="bar"><i style="--k:var(--brass);width:'+pb+'%"></i></div>'+(cl?'<button class="btn pri" data-g="claim">รับลีดเดอร์ที่เลือก (การันตี)</button>':'')+'</div>'+
  '<p class="onmsg" role="status">'+esc(gachaMsg)+'</p>'+rs+
@@ -1369,7 +1369,7 @@ const backBtn='<div><button class="btn" data-go="menu">← กลับเมน
 function renderMenu(){
  const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['online','เล่นออนไลน์','สร้างห้อง ใส่เลข 5 หลัก เล่นกับเพื่อนคนละเครื่อง',1],['gacha','กาชา','สุ่มเศษลีดเดอร์ใหม่ 10 คน ปลดล็อกด้วยตังที่ได้จากการเล่น',0],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0],['lore','ประวัติตัวละคร','ชื่อ อายุ ความชอบ อริ อาชีพบังหน้า และประวัติโดยย่อของลีดเดอร์ทั้ง 6 คน',0]];
  $('menu').innerHTML='<div class="brand"><div class="logo" role="img" aria-label="Mafia Turf"></div><h1 class="hero">สงครามอิทธิพล</h1><p class="mute" style="max-width:52ch">ขยายอิทธิพลทีละช่อง สะสมกำลังคน ทรัพย์สิน และเส้นสายให้ครบอย่างละ 100 ก่อนใคร หรือล้อมฐานคู่แข่งให้จนมุม</p></div>'+
- '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ −'+LOSE_COIN+' ตัง ทุกโหมด</span></div><div class="tiles">'+T.map(t=>'<button class="tile'+(t[3]?' pri':'')+'" data-go="'+t[0]+'"><b>'+t[1]+'</b><span>'+t[2]+'</span></button>').join('')+'</div>';
+ '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ +'+LOSE_COIN+' ตัง ทุกโหมด</span></div><div class="tiles">'+T.map(t=>'<button class="tile'+(t[3]?' pri':'')+'" data-go="'+t[0]+'"><b>'+t[1]+'</b><span>'+t[2]+'</span></button>').join('')+'</div>';
 }
 const RULES=[
  ['เป้าหมาย',['ชนะเมื่อมีผู้เล่นที่มี กำลังคน ทรัพย์สิน และเส้นสาย ครบอย่างละ 100 หรือมากกว่า (โหมดทีม ทั้งทีมชนะ)','หรือชนะด้วยการกำจัดคู่แข่งจนเหลือฝั่งเดียวบนกระดาน']],
