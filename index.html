@@ -176,6 +176,11 @@ details ul{margin:8px 0 0;padding-left:20px;display:grid;gap:4px}
 .lnk{font:inherit;color:var(--fg);background:none;border:1px solid var(--line);border-radius:30px;padding:3px 12px 3px 4px;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
 .lnk:hover{border-color:var(--brass)}
 @media (max-width:640px){.prof{grid-template-columns:1fr}.prof .pt{height:340px;max-width:240px;margin:0 auto}.fr{grid-template-columns:1fr;gap:2px}}
+.roomcode{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--brass);padding:14px 18px;border-radius:8px}
+.rc{font-family:var(--display);font-size:44px;letter-spacing:.25em;color:var(--brass);font-weight:500}
+.onmsg{min-height:1.4em;color:var(--brass);margin:0}
+#on-code{font-size:24px;letter-spacing:.3em;text-align:center}
+@media (max-width:480px){.rc{font-size:34px}}
 body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 </style>
 </head>
@@ -186,6 +191,7 @@ body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 <section id="rules" class="stack" hidden></section>
 <section id="codex" class="stack" hidden></section>
 <section id="lore" class="stack" hidden></section>
+<section id="online" class="stack" hidden></section>
 <section id="setup" class="stack" hidden></section>
 <section id="game" hidden>
   <div class="row" style="justify-content:space-between"><div class="row"><div class="mark" role="img" aria-label="Mafia Turf"></div><h1>สงครามอิทธิพล</h1></div><button class="btn" id="quit">กลับหน้าตั้งค่า</button></div>
@@ -332,12 +338,12 @@ function modal(html,solid,dismiss){
 }
 const btn=(l,v,o={})=>'<button class="btn'+(o.pri?' pri':'')+'" data-v="'+esc(v)+'"'+(o.dis?' disabled':'')+'>'+l+(o.sub?'<small>'+o.sub+'</small>':'')+'</button>';
 const sheet=(t,b,a)=>'<h3>'+t+'</h3><div>'+b+'</div><div class="acts">'+a+'</div>';
-async function pickList(title,items,cancel=true){
- const r=await modal(sheet(title,'',items.map(x=>btn(x.l,x.v,{sub:x.d,dis:x.dis})).join('')+(cancel?btn('ยกเลิก','__x'):'')),false,cancel);
+async function pickList(title,items,cancel=true,P){
+ const r=await ask(P,sheet(title,'',items.map(x=>btn(x.l,x.v,{sub:x.d,dis:x.dis})).join('')+(cancel?btn('ยกเลิก','__x'):'')),false,cancel);
  return r.v==='__x'?null:r.v;
 }
-async function askName(title,def,cancel){
- const r=await modal(sheet(title,'<input type="text" id="nm" maxlength="14" value="'+esc(def)+'" aria-label="ชื่อลูกน้อง"><p class="mute" style="margin-top:6px">ไม่เกิน 14 ตัวอักษร</p>',btn('ตั้งชื่อ','ok',{pri:1})+(cancel?btn('ยกเลิก','__x'):'')),false,cancel);
+async function askName(title,def,cancel,P){
+ const r=await ask(P,sheet(title,'<input type="text" id="nm" maxlength="14" value="'+esc(def)+'" aria-label="ชื่อลูกน้อง"><p class="mute" style="margin-top:6px">ไม่เกิน 14 ตัวอักษร</p>',btn('ตั้งชื่อ','ok',{pri:1})+(cancel?btn('ยกเลิก','__x'):'')),false,cancel);
  if(r.v==='__x')return null;
  return clip(r.t)||def;
 }
@@ -351,6 +357,7 @@ async function ensureViewer(p){
 }
 async function notice(list,title,body){
  for(const p of [...new Set(list)]){
+  if(p.type==='remote'){await ask(p,sheet(title,body,btn('ตกลง','ok',{pri:1})));continue}
   if(p.type!=='human')continue;
   await ensureViewer(p);
   await modal(sheet(title,body,btn('ตกลง','ok',{pri:1})));
@@ -361,14 +368,14 @@ async function decide(P,m,o,canFlee){
  if(P.type==='bot')return botClash(m,o,canFlee);
  await ensureViewer(P);
  const O=G.players[o.owner];
- const r=await modal(sheet('ปะทะ!','<p>ลูกน้องของคุณ <b>'+esc(m.name)+'</b> (เลเวล '+m.lvl+') เจอ <b>'+esc(o.name)+'</b> เลเวล '+o.lvl+' ของ '+esc(O.name)+'</p><p class="mute">สู้: เลเวลสูงกว่าชนะทันที ถ้าเท่ากันเป่ายิงฉุบ ผู้แพ้เสียลูกน้อง<br>หนี: ฝ่ายที่หนีเสียพื้นที่ที่เคยยืน'+(canFlee?'':'<br>(ไม่มีช่องว่างให้หนี ต้องสู้)')+'</p>',btn('สู้','fight',{pri:1})+btn('หนี','flee',{dis:!canFlee})));
+ const r=await ask(P,sheet('ปะทะ!','<p>ลูกน้องของคุณ <b>'+esc(m.name)+'</b> (เลเวล '+m.lvl+') เจอ <b>'+esc(o.name)+'</b> เลเวล '+o.lvl+' ของ '+esc(O.name)+'</p><p class="mute">สู้: เลเวลสูงกว่าชนะทันที ถ้าเท่ากันเป่ายิงฉุบ ผู้แพ้เสียลูกน้อง<br>หนี: ฝ่ายที่หนีเสียพื้นที่ที่เคยยืน'+(canFlee?'':'<br>(ไม่มีช่องว่างให้หนี ต้องสู้)')+'</p>',btn('สู้','fight',{pri:1})+btn('หนี','flee',{dis:!canFlee})));
  return r.v;
 }
 const RPS=['ค้อน','กระดาษ','กรรไกร'];
 async function rps(A,D){
  let t=[];
  for(;;){
-  const pk=async P=>{if(P.type==='bot')return rnd(3);await ensureViewer(P);const r=await modal(sheet('เป่ายิงฉุบ','<p>'+esc(P.name)+' เลือกท่าของคุณ</p>',RPS.map((x,i)=>btn(x,i)).join('')));return+r.v};
+  const pk=async P=>{if(P.type==='bot')return rnd(3);await ensureViewer(P);const r=await ask(P,sheet('เป่ายิงฉุบ','<p>'+esc(P.name)+' เลือกท่าของคุณ</p>',RPS.map((x,i)=>btn(x,i)).join('')));return+r.v};
   const a=await pk(A),d=await pk(D);
   t.push(RPS[a]+' ชน '+RPS[d]);
   if(a===d){t[t.length-1]+=' (เสมอ เป่าใหม่)';continue}
@@ -422,13 +429,14 @@ function render(){
  }
  $('board').innerHTML=h;
  renderSide(v);renderCorners();
+ if(NET.role==='host'&&NET.started)pushViews();
 }
 function resBlock(p,big){
  return'<div class="res">'+RK.map(k=>'<div><span style="color:'+RC[k]+'">'+RN[k]+'</span> <b>'+p.res[k]+'</b>/100<div class="bar"><i style="--k:'+RC[k]+';width:'+Math.min(100,p.res[k])+'%"></i></div></div>').join('')+'</div>';
 }
 function renderSide(v){
  const cur=G.players[G.turn],bo=id=>BOSSES.find(b=>b.id===id).n;
- let h='<div class="banner"><div><b>รอบที่ '+G.round+'</b> · ตาของ <span class="dot" style="background:'+COLORS[cur.color].h+'"></span><b>'+esc(cur.name)+'</b>'+(cur.type==='bot'?' (บอท)':'')+'</div>'+
+ let h='<div class="banner"><div><b>รอบที่ '+G.round+'</b> · ตาของ <span class="dot" style="background:'+COLORS[cur.color].h+'"></span><b>'+esc(cur.name)+'</b>'+(cur.type==='bot'?' (บอท)':'')+(G.wait?' · <span class="mute">'+esc(G.wait)+'</span>':'')+'</div>'+
   (v&&G.actor===v.id?'<button class="btn pri" data-act="end"'+(G.busy?' disabled':'')+'>จบเทิร์น</button>':'')+'</div>';
  h+='<div class="pls">'+G.players.map(p=>'<div class="pl'+(p.id===G.turn?' cur':'')+(p.alive?'':' dead')+'"><div class="row" style="justify-content:space-between"><span class="who"><span class="ring sm" style="--rc:'+COLORS[p.color].h+'"><span class="av '+p.boss+'"></span></span><b>'+esc(p.name)+'</b> <span class="mute">'+bo(p.boss)+(G.mode==='2v2'?' · ทีม '+(p.team?'ข':'ก'):'')+'</span></span><span class="mute">'+(p.alive?'พื้นที่ '+terr(p)+' ช่อง (รายได้ +'+Math.floor(terr(p)/INC)+')':'ตกรอบ')+'</span></div>'+resBlock(p)+'</div>').join('')+'</div>';
  if(v&&v.alive){
@@ -448,6 +456,7 @@ function bindGame(){
   const i=+c.dataset.i,m=G.minions.find(x=>x.pos===i&&x.owner===v.id);
   if(m&&!m.moved){G.sel=(G.sel===m.id?null:m.id);render();return}
   if(G.sel!=null&&targets(v).includes(i)){
+   if(NET.role==='guest'){send(NET.conn,{t:'act',a:'move',id:G.sel,to:i});G.sel=null;G.busy=true;render();return}
    const sm=G.minions.find(x=>x.id===G.sel);G.busy=true;G.sel=null;render();
    await doMove(sm,i);G.busy=false;render();
   }else if(G.sel!=null){G.sel=null;render()}
@@ -455,8 +464,9 @@ function bindGame(){
  $('side').onclick=async e=>{
   const b=e.target.closest('[data-act]');if(!b||!G||G.busy||G.actor<0)return;
   const v=G.players[G.actor];if(G.viewer!==v.id)return;
-  if(b.dataset.act==='end'){G.endTurn&&G.endTurn();return}
+  if(b.dataset.act==='end'){if(NET.role==='guest')send(NET.conn,{t:'act',a:'end'});else G.endTurn&&G.endTurn();return}
   if(b.dataset.act==='sel'){G.sel=+b.dataset.id;render();return}
+  if(b.dataset.act==='card'&&NET.role==='guest'){send(NET.conn,{t:'act',a:'card',i:+b.dataset.i});G.busy=true;render();return}
   if(b.dataset.act==='card'){G.busy=true;render();await playCard(v,+b.dataset.i,false);G.busy=false;checkEnd();render()}
  };
 }
@@ -467,23 +477,23 @@ async function playCard(p,idx,bot){
  let tgt=null,res=null,names=[];
  if(c.t==='lvl'){
   const ms=mine(p).filter(m=>m.lvl<5);
-  if(!ms.length){if(!bot)await modal(sheet('ใช้ไม่ได้','ลูกน้องทุกคนเลเวลสูงสุดแล้ว',btn('ตกลง','ok')));return false}
+  if(!ms.length){if(!bot)await ask(p,sheet('ใช้ไม่ได้','ลูกน้องทุกคนเลเวลสูงสุดแล้ว',btn('ตกลง','ok')));return false}
   if(bot)tgt=ms.sort((a,b)=>b.lvl-a.lvl)[0];
-  else{const v=await pickList('เลือกลูกน้องที่จะฝึก',ms.map(m=>({l:'['+m.tag+'] '+esc(m.name),v:m.id,d:'เลเวล '+m.lvl+' · ตำแหน่ง '+coord(m.pos)})));if(v==null)return false;tgt=ms.find(m=>m.id===+v)}
+  else{const v=await pickList('เลือกลูกน้องที่จะฝึก',ms.map(m=>({l:'['+m.tag+'] '+esc(m.name),v:m.id,d:'เลเวล '+m.lvl+' · ตำแหน่ง '+coord(m.pos)})),true,p);if(v==null)return false;tgt=ms.find(m=>m.id===+v)}
  }
  if(c.t==='steal'){
   if(!foes.length)return false;
   if(bot){tgt=foes.sort((a,b)=>Math.max(...RK.map(k=>b.res[k]))-Math.max(...RK.map(k=>a.res[k])))[0];res=RK.slice().sort((a,b)=>tgt.res[b]-tgt.res[a])[0]}
   else{
-   const v=await pickList('เลือกคู่แข่งที่จะปล้น',foes.map(q=>({l:esc(q.name),v:q.id})));if(v==null)return false;
+   const v=await pickList('เลือกคู่แข่งที่จะปล้น',foes.map(q=>({l:esc(q.name),v:q.id})),true,p);if(v==null)return false;
    tgt=G.players[+v];
-   const r=await pickList('ชิงทรัพยากรชนิดไหน',RK.map(k=>({l:RN[k],v:k,d:'ของ '+esc(tgt.name)+' มี '+tgt.res[k]})));if(r==null)return false;res=r;
+   const r=await pickList('ชิงทรัพยากรชนิดไหน',RK.map(k=>({l:RN[k],v:k,d:'ของ '+esc(tgt.name)+' มี '+tgt.res[k]})),true,p);if(r==null)return false;res=r;
   }
  }
  if(c.t==='spawn'){
   for(let i=0;i<c.v;i++){
    if(bot)names.push(botName());
-   else{const n=await askName('ตั้งชื่อลูกน้องคนที่ '+(i+1)+' จาก '+c.v,NAMES[rnd(NAMES.length)],true);if(n==null)return false;names.push(n)}
+   else{const n=await askName('ตั้งชื่อลูกน้องคนที่ '+(i+1)+' จาก '+c.v,NAMES[rnd(NAMES.length)],true,p);if(n==null)return false;names.push(n)}
   }
  }
  payRes(p,c.cost);
@@ -571,12 +581,14 @@ async function takeTurn(p){
  mine(p).forEach(m=>m.moved=false);
  draw(p,1);
  log('ตาของ '+p.name);
- if(p.type==='human'){
+ if(p.type==='human'||p.type==='remote'){
   await ensureViewer(p);
-  while(p.hand.length>6){
-   const v=await pickList('มือเกิน 6 ใบ เลือกการ์ดที่จะทิ้ง',p.hand.map((c,i)=>({l:c.n,v:i,d:c.d})),false);
+  while(p.hand.length>6&&p.type!=='bot'){
+   const v=await pickList('มือเกิน 6 ใบ เลือกการ์ดที่จะทิ้ง',p.hand.map((c,i)=>({l:c.n,v:i,d:c.d})),false,p);
    G.discard.push(p.hand.splice(+v,1)[0]);
   }
+ }
+ if(p.type==='human'||p.type==='remote'){
   G.actor=p.id;render();
   await new Promise(r=>{G.endTurn=r});
   G.endTurn=null;G.actor=-1;G.sel=null;
@@ -604,7 +616,7 @@ async function run(){
 async function startGame(cfg){
  initGame(cfg);
  if(G.humans===1)G.viewer=G.players.find(p=>p.type==='human').id;
- $('setup').hidden=true;$('game').hidden=false;
+ SCREENS.forEach(s=>{$(s).hidden=true});$('game').hidden=false;
  render();
  const g=G;
  await run();
@@ -612,6 +624,7 @@ async function startGame(cfg){
  const ws=G.players.filter(p=>p.team===G.over.team);
  G.viewer=G.viewer>=0?G.viewer:0;render();
  await modal(sheet('จบเกม','<p>ผู้ชนะ: <b>'+(ws.length?ws.map(p=>esc(p.name)).join(' และ '):'ไม่มี')+'</b></p><p class="mute">'+esc(G.over.reason)+'</p>',btn('กลับไปหน้าตั้งค่า','ok',{pri:1})));
+ if(NET.role)closeNet();
  show('menu');
 }
 /* ---------- setup ---------- */
@@ -695,7 +708,367 @@ function renderLore(){
   ['ความสามารถ',b.d],['ประวัติโดยย่อ',L.bio]];
  $('lore').innerHTML=backBtn+'<div><h1>ประวัติตัวละคร</h1></div>'+picker+'<div class="prof"><div class="pt '+loreSel+'" role="img" aria-label="'+b.n+'"></div><dl>'+rows.map(x=>'<div class="fr"><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>').join('')+'</dl></div>';
 }
-const SCREENS=['menu','rules','codex','lore','setup'];
+/* ---------- online: room code + PeerJS, host-authoritative ---------- */
+const PEER_PFX='mafiaturf-th-';
+const PEER_URLS=['https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js','https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js'];
+const ROOM_MODES={'1v1':{n:'1 vs 1',seats:2},'2v2':{n:'2 vs 2 (ทีมมุมทแยง)',seats:4},ffa:{n:'FFA 4 คน',seats:4}};
+const NET={role:null,peer:null,conn:null,code:'',mode:'1v1',seats:[],me:0,pconn:{},pend:new Map(),aid:0,started:false,state:null,msg:'',name:'',joinCode:'',busy:false,endShown:false,cb:false,dt:null};
+let hostMode='1v1';
+const clipN=s=>Array.from(String(s==null?'':s).trim()).slice(0,16).join('');
+const send=(c,m)=>{try{if(c&&c.open!==false)c.send(m)}catch(e){}};
+const rcode=()=>String(rnd(100000)).padStart(5,'0');
+const blankSeat=()=>({kind:'open',name:'',color:-1,boss:'',mname:'',conn:null});
+function setMsg(t){NET.msg=t;const el=$('on-msg');if(el)el.textContent=t}
+function loadPeer(){
+ return new Promise((res,rej)=>{
+  if(typeof Peer!=='undefined')return res();
+  let k=0;
+  const next=()=>{
+   if(k>=PEER_URLS.length)return rej(new Error('load'));
+   const s=document.createElement('script');s.src=PEER_URLS[k++];
+   s.onload=()=>typeof Peer!=='undefined'?res():next();
+   s.onerror=()=>{try{s.remove()}catch(e){}next()};
+   document.head.appendChild(s);
+  };
+  next();
+ });
+}
+function closeNet(){
+ const peer=NET.peer,conn=NET.conn,seats=NET.seats;
+ NET.role=null;NET.peer=null;NET.conn=null;NET.state=null;NET.started=false;NET.endShown=false;NET.cb=false;NET.seats=[];NET.pconn={};
+ NET.pend.forEach(v=>v.res(v.fb));NET.pend.clear();
+ seats.forEach(s=>{if(s.conn){try{s.conn.close()}catch(e){}}});
+ try{if(conn)conn.close()}catch(e){}
+ try{if(peer)peer.destroy()}catch(e){}
+}
+/* ----- colours / bosses without clashes ----- */
+function freeColor(ex){const u=new Set(NET.seats.map((s,i)=>i===ex?-1:s.color));for(let c=0;c<COLORS.length;c++)if(!u.has(c))return c;return 0}
+function freeBoss(ex){const u=new Set(NET.seats.map((s,i)=>i===ex?'':s.boss));return(BOSSES.find(b=>!u.has(b.id))||BOSSES[0]).id}
+/* ----- entry screen ----- */
+function renderOnline(){
+ if(NET.role&&NET.state){renderLobby();return}
+ const mo=Object.keys(ROOM_MODES).map(k=>'<button class="btn'+(k===hostMode?' on':'')+'" data-o="hmode" data-k="'+k+'">'+ROOM_MODES[k].n+'</button>').join('');
+ $('online').innerHTML=backBtn+'<div><h1>เล่นออนไลน์</h1><p class="mute" style="max-width:60ch">เจ้าของห้องสร้างห้องแล้วส่งเลข 5 หลักให้เพื่อน เพื่อนพิมพ์เลขเพื่อเข้าห้อง แล้วเล่นพร้อมกันคนละเครื่อง</p></div>'+
+ '<div><div class="lbl">ชื่อของคุณ</div><input type="text" id="on-name" maxlength="16" value="'+esc(NET.name)+'" aria-label="ชื่อของคุณ" placeholder="ชื่อผู้เล่น"></div>'+
+ '<div class="seats"><div class="seat"><h3>สร้างห้อง</h3><div class="lbl">โหมด</div><div class="row">'+mo+'</div><button class="btn pri" data-o="create">สร้างห้อง</button></div>'+
+ '<div class="seat"><h3>เข้าห้อง</h3><div><div class="lbl">เลขห้อง 5 หลัก</div><input type="text" id="on-code" inputmode="numeric" maxlength="5" placeholder="12345" value="'+esc(NET.joinCode)+'" aria-label="เลขห้อง 5 หลัก"></div><button class="btn pri" data-o="join">เข้าห้อง</button></div></div>'+
+ '<p class="onmsg" id="on-msg" role="status">'+esc(NET.msg)+'</p>'+
+ '<p class="mute" style="max-width:62ch">เกมเชื่อมต่อกันโดยตรงระหว่างเบราว์เซอร์ เจ้าของห้องต้องเปิดหน้านี้ค้างไว้ตลอดเกม ถ้าเจ้าของห้องปิดหน้า ห้องจะปิดทันที</p>';
+}
+/* ----- create room (host) ----- */
+async function createRoom(){
+ if(NET.busy)return;
+ const name=clipN(NET.name)||'เจ้าของห้อง';
+ NET.busy=true;setMsg('กำลังเชื่อมต่อ...');
+ try{await loadPeer()}catch(e){NET.busy=false;setMsg('โหลดระบบออนไลน์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่ (ระบบออนไลน์ใช้ได้เมื่อเปิดจากเว็บเกมจริงเท่านั้น)');return}
+ closeNet();
+ let tries=0;
+ const open=()=>{
+  const code=rcode(),peer=new Peer(PEER_PFX+code);
+  NET.peer=peer;
+  peer.on('open',()=>{
+   if(NET.peer!==peer)return;
+   NET.busy=false;NET.role='host';NET.code=code;NET.mode=hostMode;NET.started=false;NET.endShown=false;
+   const n=ROOM_MODES[NET.mode].seats;
+   NET.seats=Array.from({length:n},blankSeat);
+   NET.seats[0]={kind:'host',name,color:0,boss:BOSSES[0].id,mname:'',conn:null};
+   NET.me=0;NET.msg='';NET.last={};NET.mymname='';lobbyChanged();
+  });
+  peer.on('connection',conn=>{
+   if(NET.peer!==peer)return;
+   conn.on('data',m=>onHostData(conn,m));
+   conn.on('close',()=>onGuestGone(conn));
+   conn.on('error',()=>onGuestGone(conn));
+  });
+  peer.on('disconnected',()=>{try{if(NET.peer===peer)peer.reconnect()}catch(e){}});
+  peer.on('error',err=>{
+   if(NET.peer!==peer)return;
+   if(err&&err.type==='unavailable-id'&&++tries<10){try{peer.destroy()}catch(e){}NET.peer=null;open();return}
+   if(NET.role==='host'){setMsg('การเชื่อมต่อกับเซิร์ฟเวอร์จับคู่มีปัญหา ผู้เล่นใหม่อาจเข้าห้องไม่ได้');if(NET.state)renderLobby();return}
+   NET.busy=false;closeNet();setMsg('สร้างห้องไม่สำเร็จ เชื่อมต่อเซิร์ฟเวอร์จับคู่ไม่ได้ ลองใหม่อีกครั้ง');
+  });
+ };
+ open();
+}
+/* ----- join room (guest) ----- */
+async function joinRoom(){
+ if(NET.busy)return;
+ const code=String(NET.joinCode||'').replace(/\D/g,'');
+ if(code.length!==5){setMsg('กรอกเลขห้อง 5 หลักให้ครบ');return}
+ const name=clipN(NET.name)||'ผู้เล่น';
+ NET.busy=true;setMsg('กำลังเชื่อมต่อห้อง '+code+' ...');
+ try{await loadPeer()}catch(e){NET.busy=false;setMsg('โหลดระบบออนไลน์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่ (ระบบออนไลน์ใช้ได้เมื่อเปิดจากเว็บเกมจริงเท่านั้น)');return}
+ closeNet();
+ const peer=new Peer();NET.peer=peer;
+ let done=false;
+ const fail=t=>{if(done)return;done=true;NET.busy=false;if(NET.peer===peer)closeNet();setMsg(t)};
+ const to=setTimeout(()=>fail('เชื่อมต่อห้อง '+code+' ไม่ได้ ตรวจสอบเลขห้องหรือเครือข่ายแล้วลองใหม่'),15000);
+ peer.on('error',e=>{clearTimeout(to);fail(e&&e.type==='peer-unavailable'?'ไม่พบห้องเลข '+code:'เชื่อมต่อเซิร์ฟเวอร์จับคู่ไม่ได้ ลองใหม่อีกครั้ง')});
+ peer.on('open',()=>{
+  const conn=peer.connect(PEER_PFX+code,{reliable:true,serialization:'json'});
+  NET.conn=conn;
+  conn.on('open',()=>{clearTimeout(to);if(done)return;done=true;NET.busy=false;NET.role='guest';NET.code=code;NET.msg='';send(conn,{t:'join',name,v:1})});
+  conn.on('data',onGuestData);
+  conn.on('close',()=>onHostGone(peer));
+  conn.on('error',()=>{clearTimeout(to);if(!done)fail('เชื่อมต่อห้อง '+code+' ไม่ได้');else onHostGone(peer)});
+ });
+}
+function leaveRoom(){closeNet();NET.msg='';NET.busy=false;renderOnline()}
+async function onHostGone(peer){
+ if(NET.role!=='guest'||NET.peer!==peer)return;
+ closeNet();G=null;
+ await modal(sheet('ห้องปิดแล้ว','<p>เจ้าของห้องปิดห้องหรือการเชื่อมต่อหลุด</p>',btn('กลับเมนู','ok',{pri:1})));
+ show('menu');
+}
+/* ----- lobby ----- */
+function lobbyState(you){
+ return{mode:NET.mode,code:NET.code,you,seats:NET.seats.map(s=>({kind:s.kind,name:s.name,color:s.color,boss:s.boss}))};
+}
+function lobbyChanged(){
+ NET.state=lobbyState(NET.me);
+ NET.seats.forEach((s,i)=>{if(s.kind==='remote')send(s.conn,Object.assign({t:'lobby'},lobbyState(i)))});
+ if(!NET.started)showOnline();
+}
+function showOnline(){if($('online').hidden)show('online');else renderOnline()}
+const seatOf=conn=>NET.seats.findIndex(s=>s.conn===conn);
+function onHostData(conn,m){
+ if(NET.role!=='host'||!m||typeof m!=='object')return;
+ if(m.t==='join')return onJoin(conn,m);
+ const i=seatOf(conn);if(i<0)return;
+ if(m.t==='lob')lobbyAct(i,String(m.o),m.i==null?-1:+m.i,m.k,m.x);
+ else if(m.t==='act')onAct(i,m);
+ else if(m.t==='ans')onAns(i,m);
+}
+function onJoin(conn,m){
+ if(seatOf(conn)>=0)return;
+ if(NET.started){send(conn,{t:'full',why:'started'});setTimeout(()=>{try{conn.close()}catch(e){}},300);return}
+ const i=NET.seats.findIndex(s=>s.kind==='open');
+ if(i<0){send(conn,{t:'full',why:'full'});setTimeout(()=>{try{conn.close()}catch(e){}},300);return}
+ NET.seats[i]={kind:'remote',name:clipN(m.name)||'ผู้เล่น '+(i+1),color:freeColor(i),boss:freeBoss(i),mname:'',conn};
+ lobbyChanged();
+}
+function lobbyAct(from,o,i,k,x){
+ const S=NET.seats,me=S[from];
+ if(!me||NET.started)return;
+ const isHost=me.kind==='host',canEdit=j=>!!S[j]&&S[j].kind!=='open'&&(j===from||(isHost&&S[j].kind==='bot'));
+ if(o==='color'){const c=+k;if(canEdit(i)&&c>=0&&c<COLORS.length&&!S.some((s,j)=>j!==i&&s.color===c))S[i].color=c}
+ else if(o==='boss'){if(canEdit(i)&&BOSSES.some(b=>b.id===k))S[i].boss=k}
+ else if(o==='name'){if(canEdit(i))S[i].name=clipN(x)}
+ else if(o==='mname'){if(i===from)S[i].mname=clip(x)}
+ else if(o==='sit'){if(S[i]&&S[i].kind==='open'&&i!==from){S[i]=S[from];S[from]=blankSeat();if(NET.me===from)NET.me=i}}
+ else if(o==='kind'&&isHost){
+  if(S[i]&&(S[i].kind==='open'||S[i].kind==='bot')&&(k==='open'||k==='bot')){
+   S[i]=blankSeat();
+   if(k==='bot')S[i]={kind:'bot',name:'บอท '+(i+1),color:freeColor(i),boss:freeBoss(i),mname:'',conn:null};
+  }
+ }
+ else if(o==='kick'&&isHost){
+  const t=S[i];
+  if(t&&t.kind==='remote'){const c=t.conn;S[i]=blankSeat();send(c,{t:'kicked'});setTimeout(()=>{try{c.close()}catch(e){}},300)}
+ }
+ else if(o==='start'&&isHost)return startOnline();
+ lobbyChanged();
+}
+function lobDo(o,i,k,x){
+ if(NET.role==='host')lobbyAct(NET.me,o,i==null?-1:i,k,x);
+ else if(NET.role==='guest')send(NET.conn,{t:'lob',o,i,k,x});
+}
+function keepFocus(fn){
+ const a=typeof document!=='undefined'?document.activeElement:null,id=a&&a.id,s=a&&a.selectionStart,val=a&&a.tagName==='INPUT'?a.value:null;
+ fn();
+ if(id){const n=$(id);if(n&&n.focus){if(val!=null)n.value=val;n.focus();try{n.setSelectionRange(s,s)}catch(e){}}}
+}
+function renderLobby(){
+ const st=NET.state;if(!st)return;
+ const host=NET.role==='host',cn=st.seats.length===2?CORNER2:CORNER4,teams=st.mode==='2v2'?[0,1,1,0]:null;
+ const full=st.seats.every(s=>s.kind!=='open');
+ const KL={open:'ว่าง',bot:'บอท',host:'เจ้าของห้อง',remote:'ผู้เล่น'};
+ const cards=st.seats.map((s,i)=>{
+  const you=i===st.you,edit=you||(host&&s.kind==='bot');
+  const head='<div class="row" style="justify-content:space-between"><b>ที่นั่ง '+(i+1)+' · '+cn[i]+(teams?' · ทีม '+(teams[i]?'ข':'ก'):'')+'</b><span class="mute">'+KL[s.kind]+(you?' (คุณ)':'')+'</span></div>';
+  if(s.kind==='open')return'<div class="seat">'+head+'<p class="mute">รอผู้เล่นเข้าห้อง</p><div class="row"><button class="btn" data-o="sit" data-i="'+i+'">ย้ายมานั่งที่นี่</button>'+(host?'<button class="btn" data-o="kind" data-i="'+i+'" data-k="bot">ใส่บอท</button>':'')+'</div></div>';
+  const bo=BOSSES.find(b=>b.id===s.boss),c=COLORS[s.color].h;
+  let h='<div class="seat">'+head+'<div class="row"><span class="ring" style="--rc:'+c+'"><span class="av '+s.boss+'"></span></span><div><b>'+esc(s.name)+'</b><div class="mute">'+bo.n+' · สี'+COLORS[s.color].n+'</div></div></div>';
+  if(edit){
+   h+='<div><div class="lbl">ชื่อผู้เล่น</div><input type="text" id="lb-name-'+i+'" data-f="name" data-i="'+i+'" maxlength="16" value="'+esc(s.name)+'" aria-label="ชื่อผู้เล่น"></div>';
+   if(you)h+='<div><div class="lbl">ชื่อลูกน้องคนแรก (ไม่เกิน 14 ตัวอักษร)</div><input type="text" id="lb-mname" data-f="mname" data-i="'+i+'" maxlength="14" value="'+esc(NET.mymname==null?'':NET.mymname)+'" placeholder="ตั้งชื่อลูกน้อง" aria-label="ชื่อลูกน้องคนแรก"></div>';
+   h+='<div class="row">'+COLORS.map((cc,k)=>'<button class="sw'+(k===s.color?' on':'')+'" style="background:'+cc.h+'" data-o="color" data-i="'+i+'" data-k="'+k+'" title="'+cc.n+'" aria-label="'+cc.n+'"'+(st.seats.some((z,j)=>j!==i&&z.color===k)?' disabled':'')+'></button>').join('')+'</div>';
+   h+='<div class="row">'+BOSSES.map(b=>'<button class="avb'+(b.id===s.boss?' on':'')+'" data-o="boss" data-i="'+i+'" data-k="'+b.id+'" title="'+b.n+'" aria-label="'+b.n+'"><span class="av '+b.id+'"></span></button>').join('')+'</div>';
+  }
+  if(host&&s.kind==='bot')h+='<button class="btn" data-o="kind" data-i="'+i+'" data-k="open">เปลี่ยนเป็นที่นั่งว่าง</button>';
+  if(host&&s.kind==='remote')h+='<button class="btn" data-o="kick" data-i="'+i+'">เชิญออก</button>';
+  return h+'</div>';
+ }).join('');
+ keepFocus(()=>{
+  $('online').innerHTML='<div class="roomcode"><div><div class="lbl">เลขห้อง</div><b class="rc">'+esc(st.code)+'</b></div><div class="row"><button class="btn" data-o="copy">คัดลอกเลขห้อง</button><button class="btn" data-o="copylink">คัดลอกลิงก์เชิญ</button></div></div>'+
+  '<p class="mute">'+(host?'ส่งเลขห้องนี้ให้เพื่อน ให้เพื่อนเลือก "เล่นออนไลน์" แล้วพิมพ์เลขเพื่อเข้าห้อง':'คุณอยู่ในห้องของเพื่อน รอเจ้าของห้องเริ่มเกม')+' · โหมด '+ROOM_MODES[st.mode].n+'</p>'+
+  '<div class="seats">'+cards+'</div>'+
+  '<div class="row">'+(host?'<button class="btn pri" data-o="start"'+(full?'':' disabled')+'>เริ่มเกม</button>'+(full?'':'<span class="mute">ต้องมีผู้เล่นหรือบอทนั่งครบทุกที่นั่งก่อนเริ่ม</span>'):'<span class="mute">รอเจ้าของห้องเริ่มเกม...</span>')+'<button class="btn" data-o="leave">ออกจากห้อง</button></div>'+
+  '<p class="onmsg" id="on-msg" role="status">'+esc(NET.msg)+'</p>';
+ });
+}
+function copyText(t,okMsg){
+ const bad=()=>setMsg('คัดลอกไม่ได้ ให้คัดลอกด้วยตัวเอง: '+t);
+ try{navigator.clipboard.writeText(t).then(()=>setMsg(okMsg),bad)}catch(e){bad()}
+}
+function bindOnline(){
+ const el=$('online');
+ el.onclick=e=>{
+  const b=e.target.closest('[data-o]');if(!b||b.disabled)return;
+  const o=b.dataset.o,i=b.dataset.i==null?null:+b.dataset.i,k=b.dataset.k;
+  if(o==='hmode'){hostMode=k;renderOnline();return}
+  if(o==='create'){createRoom();return}
+  if(o==='join'){joinRoom();return}
+  if(o==='leave'){leaveRoom();return}
+  if(o==='copy'){copyText(NET.code,'คัดลอกเลขห้องแล้ว');return}
+  if(o==='copylink'){copyText(String(location.href).split('#')[0].split('?')[0]+'?room='+NET.code,'คัดลอกลิงก์เชิญแล้ว');return}
+  lobDo(o,i,k);
+ };
+ el.oninput=e=>{
+  const t=e.target;
+  if(t.id==='on-name'){NET.name=t.value;return}
+  if(t.id==='on-code'){t.value=t.value.replace(/\D/g,'').slice(0,5);NET.joinCode=t.value;return}
+  if(t.dataset&&t.dataset.f){
+   const f=t.dataset.f,i=+t.dataset.i,v=t.value;
+   if(f==='mname')NET.mymname=v;
+   clearTimeout(NET.dt);NET.dt=setTimeout(()=>lobDo(f,i,null,v),200);
+  }
+ };
+}
+/* ----- start (host) ----- */
+function startOnline(){
+ const S=NET.seats;
+ if(NET.started||S.some(s=>s.kind==='open'))return;
+ NET.started=true;
+ const cfg={mode:NET.mode,seats:S.map((s,i)=>({type:s.kind==='host'?'human':s.kind==='remote'?'remote':'bot',name:clipN(s.name)||(s.kind==='bot'?'บอท ':'ผู้เล่น ')+(i+1),color:s.color,boss:s.boss,mname:clip(s.mname)||botName()}))};
+ NET.pconn={};S.forEach((s,i)=>{if(s.kind==='remote'){NET.pconn[i]=s.conn;send(s.conn,{t:'start'})}});
+ startGame(cfg);
+}
+/* ----- asking remote players ----- */
+function fallbackOf(html){
+ if(html.includes('data-v="__x"'))return{v:'__x',t:''};
+ const vs=[...html.matchAll(/data-v="([^"]*)"(?![^>]*disabled)/g)].map(x=>x[1]).filter(v=>v!=='__x');
+ return{v:vs.length?vs[0]:'ok',t:''};
+}
+function allowedOf(html){return new Set([...html.matchAll(/data-v="([^"]*)"(?![^>]*disabled)/g)].map(x=>x[1]))}
+function ask(P,html,solid,dismiss){
+ if(!P||P.type!=='remote')return modal(html,solid,dismiss);
+ const conn=NET.pconn[P.id];
+ if(!conn)return Promise.resolve(fallbackOf(html));
+ return new Promise(res=>{
+  const id=++NET.aid;
+  NET.pend.set(id,{pid:P.id,res,fb:fallbackOf(html),ok:allowedOf(html)});
+  G.wait='รอ '+P.name+' ตัดสินใจ';render();
+  send(conn,{t:'ask',id,html,solid:!!solid,dismiss:!!dismiss});
+ }).then(r=>{if(G&&!NET.pend.size)G.wait='';render();return r});
+}
+function onAns(pid,m){
+ const p=NET.pend.get(m.id);
+ if(!p||p.pid!==pid)return;
+ NET.pend.delete(m.id);
+ const v=String(m.v==null?'':m.v);
+ p.res(p.ok.has(v)?{v,t:String(m.x==null?'':m.x).slice(0,40)}:p.fb);
+}
+function waitingRemote(){
+ const s=new Set();
+ NET.pend.forEach(v=>s.add(v.pid));
+ if(G&&G.actor>=0&&G.players[G.actor]&&G.players[G.actor].type==='remote')s.add(G.actor);
+ return[...s];
+}
+function dropToBot(i,why){
+ if(!G||!G.players[i]||G.players[i].type!=='remote')return;
+ const P=G.players[i],conn=NET.pconn[i];
+ P.type='bot';delete NET.pconn[i];
+ log(P.name+' '+why+' บอทรับช่วงต่อ');
+ if(conn){send(conn,{t:'bye'});setTimeout(()=>{try{conn.close()}catch(e){}},300)}
+ NET.pend.forEach((v,k)=>{if(v.pid===i){NET.pend.delete(k);v.res(v.fb)}});
+ if(G.actor===i&&G.endTurn)G.endTurn();
+ render();
+}
+function onGuestGone(conn){
+ if(NET.role!=='host')return;
+ const i=seatOf(conn);if(i<0)return;
+ if(!NET.started){NET.seats[i]=blankSeat();lobbyChanged();return}
+ dropToBot(i,'หลุดการเชื่อมต่อ');
+}
+/* ----- views: only what each player may see ----- */
+function viewFor(p){
+ const vis=visible(p),minions=[];
+ vis.mineSet.forEach(m=>minions.push(Object.assign({},m)));
+ vis.foe.forEach(pos=>{const mm=G.minions.find(x=>x.pos===pos&&!allies(x.owner,p.id));if(mm)minions.push({id:mm.id,owner:mm.owner,pos:mm.pos,tag:'?',name:'',lvl:0,wins:0,moved:false})});
+ return{
+  you:p.id,turn:G.turn,round:G.round,actor:G.actor,busy:!!G.busy,wait:G.wait||'',scout:G.scout===p.id?p.id:-1,mode:G.mode,
+  over:G.over?{names:G.players.filter(q=>q.team===G.over.team).map(q=>q.name),reason:G.over.reason}:null,
+  o:G.cells.map(c=>c.o),bases:G.cells.reduce((a,c,i)=>{if(c.b>=0)a.push([i,c.b]);return a},[]),
+  players:G.players.map(q=>({id:q.id,name:q.name,type:q.type==='bot'?'bot':'human',color:q.color,boss:q.boss,team:q.team,base:q.base,res:q.res,alive:q.alive,hand:q.id===p.id?q.hand.map(c=>c.id):[],handN:q.hand.length})),
+  minions,log:G.log.slice(0,14)
+ };
+}
+NET.last={};
+function pushViewTo(i,force){
+ const P=G&&G.players[i];if(!P||P.type!=='remote')return;
+ const view=viewFor(P),s=JSON.stringify(view);
+ if(!force&&NET.last[i]===s)return;
+ NET.last[i]=s;send(NET.pconn[i],{t:'view',view});
+}
+function pushViews(){
+ if(!G||NET.role!=='host'||!NET.started)return;
+ for(const k in NET.pconn)pushViewTo(+k);
+}
+/* ----- host: guest actions ----- */
+async function onAct(pid,m){
+ if(!G||G.over||G.busy||G.actor!==pid){pushViewTo(pid,true);return}
+ const p=G.players[pid];
+ if(m.a==='end'){if(G.endTurn)G.endTurn();return}
+ if(m.a==='move'){
+  const mn=G.minions.find(x=>x.id===m.id&&x.owner===pid&&!x.moved),to=+m.to;
+  if(!mn||!(to>=0&&to<N*N)||!nbrs(mn.pos).includes(to)||G.minions.some(x=>x.pos===to&&allies(x.owner,pid))){pushViewTo(pid,true);return}
+  G.busy=true;render();
+  await doMove(mn,to);
+  G.busy=false;render();return;
+ }
+ if(m.a==='card'){
+  const i=+m.i;
+  if(!(i>=0&&i<p.hand.length)){pushViewTo(pid,true);return}
+  G.busy=true;render();
+  await playCard(p,i,false);
+  G.busy=false;checkEnd();render();return;
+ }
+ pushViewTo(pid,true);
+}
+/* ----- guest: messages from host ----- */
+async function onGuestData(m){
+ if(NET.role!=='guest'&&!(m&&m.t==='lobby'))return;
+ if(!m||typeof m!=='object')return;
+ if(m.t==='lobby'){NET.state=m;NET.role='guest';if(NET.mymname==null)NET.mymname='';showOnline();return}
+ if(m.t==='full'){const w=m.why==='started'?'ห้องนี้เริ่มเล่นไปแล้ว':'ห้องเต็มแล้ว';closeNet();setMsg(w);show('online');return}
+ if(m.t==='kicked'||m.t==='bye'){
+  const w=m.t==='kicked'?'เจ้าของห้องเชิญคุณออกจากห้อง':'คุณถูกแทนด้วยบอท';
+  closeNet();G=null;await modal(sheet('ออกจากห้อง','<p>'+w+'</p>',btn('กลับเมนู','ok',{pri:1})));show('menu');return;
+ }
+ if(m.t==='start'){NET.started=true;G=null;NET.endShown=false;SCREENS.forEach(s=>{$(s).hidden=true});$('game').hidden=false;return}
+ if(m.t==='view'){applyView(m.view);return}
+ if(m.t==='ask'){
+  const r=await modal(m.html,!!m.solid,!!m.dismiss);
+  send(NET.conn,{t:'ans',id:m.id,v:r.v,x:r.t});
+ }
+}
+function applyView(v){
+ if(!v)return;
+ const keep=G?G.sel:null;
+ const cells=Array.from({length:N*N},(_,i)=>({o:v.o[i],b:-1}));
+ v.bases.forEach(a=>{cells[a[0]].b=a[1]});
+ const players=v.players.map(p=>Object.assign({},p,{hand:(p.hand||[]).map(id=>CARDS.find(c=>c.id===id)).filter(Boolean)}));
+ G={players,cells,minions:v.minions,log:v.log,turn:v.turn,round:v.round,over:v.over?{team:-2,reason:v.over.reason}:null,viewer:v.you,actor:v.actor,scout:v.scout,busy:v.busy,wait:v.wait,mode:v.mode,sel:null,humans:1,endTurn:null,discard:[],deck:[],mid:0};
+ if(keep!=null&&G.actor===v.you&&G.minions.some(x=>x.id===keep&&x.owner===v.you&&!x.moved))G.sel=keep;
+ render();
+ if(v.over&&!NET.endShown){
+  NET.endShown=true;
+  modal(sheet('จบเกม','<p>ผู้ชนะ: <b>'+(v.over.names.length?v.over.names.map(esc).join(' และ '):'ไม่มี')+'</b></p><p class="mute">'+esc(v.over.reason)+'</p>',btn('กลับเมนู','ok',{pri:1}))).then(()=>{closeNet();show('menu')});
+ }
+}
+
+const SCREENS=['menu','rules','codex','lore','online','setup'];
 let codexTab='cards';
 function show(id){
  SCREENS.forEach(s=>{$(s).hidden=s!==id});$('game').hidden=true;
@@ -703,12 +1076,13 @@ function show(id){
  if(id==='rules')renderRules();
  if(id==='codex')renderCodex();
  if(id==='lore')renderLore();
+ if(id==='online')renderOnline();
  if(id==='setup')renderSetup();
  window.scrollTo(0,0);
 }
 const backBtn='<div><button class="btn" data-go="menu">← กลับเมนู</button></div>';
 function renderMenu(){
- const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0],['lore','ประวัติตัวละคร','ชื่อ อายุ ความชอบ อริ อาชีพบังหน้า และประวัติโดยย่อของลีดเดอร์ทั้ง 6 คน',0]];
+ const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['online','เล่นออนไลน์','สร้างห้อง ใส่เลข 5 หลัก เล่นกับเพื่อนคนละเครื่อง',1],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0],['lore','ประวัติตัวละคร','ชื่อ อายุ ความชอบ อริ อาชีพบังหน้า และประวัติโดยย่อของลีดเดอร์ทั้ง 6 คน',0]];
  $('menu').innerHTML='<div class="brand"><div class="logo" role="img" aria-label="Mafia Turf"></div><h1 class="hero">สงครามอิทธิพล</h1><p class="mute" style="max-width:52ch">ขยายอิทธิพลทีละช่อง สะสมกำลังคน ทรัพย์สิน และเส้นสายให้ครบอย่างละ 100 ก่อนใคร หรือล้อมฐานคู่แข่งให้จนมุม</p></div>'+
  '<div class="tiles">'+T.map(t=>'<button class="tile'+(t[3]?' pri':'')+'" data-go="'+t[0]+'"><b>'+t[1]+'</b><span>'+t[2]+'</span></button>').join('')+'</div>';
 }
@@ -753,9 +1127,8 @@ function bindMenu(){
  });
 }
 
-if(typeof document!=='undefined'&&!globalThis.__TEST__){mkCfg('bot');bindSetup();bindGame();bindMenu();buildAxis();show('menu')}
+if(typeof document!=='undefined'&&!globalThis.__TEST__){mkCfg('bot');bindSetup();bindGame();bindMenu();bindOnline();buildAxis();show('menu');const q=/[?&]room=(\d{5})/.exec(location.search);if(q){NET.joinCode=q[1];show('online')}}
 
 </script>
-
 </body>
 </html>
