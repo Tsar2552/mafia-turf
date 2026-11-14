@@ -239,6 +239,9 @@ div.btn.skill{cursor:default}
 .avb.lk{opacity:.35;filter:grayscale(1);cursor:not-allowed}
 .gcb>*{justify-self:start}.gcb>.bar{justify-self:stretch}
 .row>.btn small{display:block;font-weight:400;font-size:12px}
+.tturn{position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:50;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--c,var(--brass));border-radius:8px;padding:12px 22px;font-family:var(--display);font-size:clamp(18px,4.5vw,26px);box-shadow:0 6px 24px rgba(0,0,0,.5);animation:tt 2s ease forwards;max-width:92vw;text-align:center}
+@keyframes tt{0%{opacity:0;transform:translate(-50%,-14px)}12%,78%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
+@media (prefers-reduced-motion:reduce){.tturn{animation:none;opacity:1}}
 body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 </style>
 </head>
@@ -307,6 +310,15 @@ const CARDS=[
 ];
 const NAMES=['เสี่ยหมู','ไอ้แมว','ตาเหลือก','เฮียตง','แม่นกยูง','ลุงเหล็ก','อาตี๋','จ่าเสือ','พี่บอส','เจ๊ฝอย','ปู่ดำ','น้าเขี้ยว','หนุ่มเงา','เด็กสอง','ไอ้เกลียว','มือปืนจิ๋ว','ตี๋ใหญ่','ป๋าเพชร','ลูกชายเสือ','พญาไฟ','เสือโหด','เก่งกาจ','มังกรเขียว','ไอ้หนวด'];
 let G=null,FAST=false;
+function turnToast(p){
+ try{
+  if(typeof document==='undefined'||FAST)return;
+  const g=$('game');if(!g||!g.appendChild||!document.createElement)return;
+  const d=document.createElement('div');d.className='tturn';d.setAttribute('role','status');
+  d.textContent='เทิร์นที่ '+p.turns+' ของ '+p.name;d.style.setProperty('--c',COLORS[p.color].h);
+  g.appendChild(d);setTimeout(()=>{try{d.remove()}catch(e){}},2000);
+ }catch(e){}
+}
 const sleep=ms=>FAST?Promise.resolve():new Promise(r=>setTimeout(r,ms));
 const rnd=n=>Math.floor(Math.random()*n);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -332,7 +344,7 @@ function initGame(cfg){
  const teams=cfg.mode==='2v2'?[0,1,1,0]:cfg.seats.map((_,i)=>i);
  G={players:[],cells:Array.from({length:N*N},()=>({o:-1,b:-1})),minions:[],deck:buildDeck(),discard:[],log:[],turn:0,round:1,over:null,viewer:-1,actor:-1,scout:-1,busy:false,sel:null,mid:1,mode:cfg.mode,humans:0,endTurn:null,lastCard:null};
  cfg.seats.forEach((s,i)=>{
-  const p={id:i,name:s.name,type:s.type,color:s.color,boss:s.boss,team:teams[i],base:corners[i],res:{m:5,w:5,c:5},hand:[],alive:true,cd:0};
+  const p={id:i,name:s.name,type:s.type,color:s.color,boss:s.boss,team:teams[i],base:corners[i],res:{m:5,w:5,c:5},hand:[],alive:true,cd:0,turns:0};
   G.players.push(p);G.cells[p.base]={o:i,b:i};addMinion(p,s.mname,p.base);draw(p,5);
   if(s.type==='human')G.humans++;
  });
@@ -516,7 +528,7 @@ function resBlock(p,big){
 }
 function renderSide(v){
  const cur=G.players[G.turn],bo=id=>BOSSES.find(b=>b.id===id).n;
- let h='<div class="banner"><div><b>รอบที่ '+G.round+'</b> · ตาของ <span class="dot" style="background:'+COLORS[cur.color].h+'"></span><b>'+esc(cur.name)+'</b>'+(cur.type==='bot'?' (บอท)':'')+(G.wait?' · <span class="mute">'+esc(G.wait)+'</span>':'')+'</div>'+
+ let h='<div class="banner"><div><b>รอบที่ '+G.round+'</b> · เทิร์นที่ '+(cur.turns||0)+' ของ <span class="dot" style="background:'+COLORS[cur.color].h+'"></span><b>'+esc(cur.name)+'</b>'+(cur.type==='bot'?' (บอท)':'')+(G.wait?' · <span class="mute">'+esc(G.wait)+'</span>':'')+'</div>'+
   (v&&G.actor===v.id?'<button class="btn pri" data-act="end"'+(G.busy?' disabled':'')+'>จบเทิร์น</button>':'')+'</div>';
  h+='<div class="pls">'+G.players.map(p=>'<div class="pl'+(p.id===G.turn?' cur':'')+(p.alive?'':' dead')+'"><div class="row" style="justify-content:space-between"><span class="who"><span class="ring sm" style="--rc:'+COLORS[p.color].h+'"><span class="av '+p.boss+'"></span></span><b>'+esc(p.name)+'</b> <span class="mute">'+bo(p.boss)+(G.mode==='2v2'?' · ทีม '+(p.team?'ข':'ก'):'')+'</span></span><span class="mute">'+(p.alive?'พื้นที่ '+terr(p)+' ช่อง (รายได้ +'+Math.floor(terr(p)/INC)+')':'ตกรอบ')+'</span></div>'+resBlock(p)+'</div>').join('')+'</div>';
  if(v&&v.alive){
@@ -722,6 +734,7 @@ function discardTo6(p){
 async function takeTurn(p){
  G.actor=-1;G.scout=-1;G.sel=null;
  if(p.cd>0)p.cd--;
+ p.turns=(p.turns||0)+1;turnToast(p);
  mine(p).forEach(m=>m.moved=false);
  draw(p,1);
  log('ตาของ '+p.name);
@@ -1180,7 +1193,7 @@ function viewFor(p){
   you:p.id,turn:G.turn,round:G.round,actor:G.actor,busy:!!G.busy,wait:G.wait||'',scout:G.scout===p.id?p.id:-1,mode:G.mode,
   over:G.over?{team:G.over.team,names:G.players.filter(q=>q.team===G.over.team).map(q=>q.name),reason:G.over.reason}:null,
   o:G.cells.map(c=>c.o),bases:G.cells.reduce((a,c,i)=>{if(c.b>=0)a.push([i,c.b]);return a},[]),
-  players:G.players.map(q=>({id:q.id,name:q.name,type:q.type==='bot'?'bot':'human',color:q.color,boss:q.boss,team:q.team,base:q.base,res:q.res,cd:q.cd||0,alive:q.alive,hand:q.id===p.id?q.hand.map(c=>Object.keys(c.cost).length?c.id:{id:c.id,n:c.n}):[],handN:q.hand.length})),
+  players:G.players.map(q=>({id:q.id,name:q.name,type:q.type==='bot'?'bot':'human',color:q.color,boss:q.boss,team:q.team,base:q.base,res:q.res,cd:q.cd||0,turns:q.turns||0,alive:q.alive,hand:q.id===p.id?q.hand.map(c=>Object.keys(c.cost).length?c.id:{id:c.id,n:c.n}):[],handN:q.hand.length})),
   minions,log:G.log.slice(0,14)
  };
 }
@@ -1227,7 +1240,7 @@ async function onGuestData(m){
   const w=m.t==='kicked'?'เจ้าของห้องเชิญคุณออกจากห้อง':'คุณถูกแทนด้วยบอท';
   closeNet();G=null;clearPlaying();await modal(sheet('ออกจากห้อง','<p>'+w+'</p>',btn('กลับเมนู','ok',{pri:1})));show('menu');return;
  }
- if(m.t==='start'){NET.started=true;G=null;markPlaying();NET.endShown=false;SCREENS.forEach(s=>{$(s).hidden=true});$('game').hidden=false;return}
+ if(m.t==='start'){NET.started=true;NET.tkey='';G=null;markPlaying();NET.endShown=false;SCREENS.forEach(s=>{$(s).hidden=true});$('game').hidden=false;return}
  if(m.t==='view'){applyView(m.view);return}
  if(m.t==='ask'){
   const r=await modal(m.html,!!m.solid,!!m.dismiss);
@@ -1243,6 +1256,7 @@ function applyView(v){
  G={players,cells,minions:v.minions,log:v.log,turn:v.turn,round:v.round,over:v.over?{team:v.over.team,reason:v.over.reason}:null,viewer:v.you,actor:v.actor,scout:v.scout,busy:v.busy,wait:v.wait,mode:v.mode,sel:null,humans:1,endTurn:null,discard:[],deck:[],mid:0};
  if(keep!=null&&G.actor===v.you&&G.minions.some(x=>x.id===keep&&x.owner===v.you&&!x.moved))G.sel=keep;
  render();
+ {const tp=G.players[v.turn],key=v.turn+':'+(tp&&tp.turns);if(tp&&tp.turns&&NET.tkey!==key&&!v.over){NET.tkey=key;turnToast(tp)}}
  if(v.over&&!NET.endShown){
   NET.endShown=true;clearPlaying();
   const rh=resultHtml(applyResult(v.over.team<0?null:G.players[v.you].team===v.over.team));
