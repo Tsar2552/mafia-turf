@@ -303,6 +303,7 @@ const RC={m:'var(--blood)',w:'var(--cash)',c:'var(--wire)'};
 const RI=k=>'<i class="ri '+k+'" aria-hidden="true"></i>';
 const RAR={C:'ทั่วไป',R:'หายาก',SR:'หายากมาก',SSR:'ตำนาน'};
 const rarOf=b=>b.rar||'C';
+const byRar=(arr,g)=>{const o={SSR:0,SR:1,R:2,C:3};return arr.map((x,i)=>[x,i]).sort((a,b)=>o[g(a[0])]-o[g(b[0])]||a[1]-b[1]).map(x=>x[0])};
 const rarTag=b=>'<span class="rar r'+rarOf(b)+'">'+RAR[rarOf(b)]+'</span>';
 const SK=id=>{const b=BOSSES.find(x=>x.id===id)||{},a=b.kind==='active'||b.kind==='react';return'<i class="sk '+(a?'act':'pas')+'" role="img" aria-label="'+(a?'สกิลกดใช้ (Active)':'สกิลติดตัว (Passive)')+'"></i>'};
 const COLORS=[{n:'แดง',h:'#d9423f'},{n:'เหลือง',h:'#e9c32b'},{n:'น้ำเงิน',h:'#3a6ee0'},{n:'เขียว',h:'#3fae5a'},{n:'ส้ม',h:'#ec8a34'},{n:'ดำ',h:'#26262b'},{n:'ขาว',h:'#f0efe9'},{n:'ม่วง',h:'#8d57cb'},{n:'ชมพู',h:'#ee7fb0'},{n:'ฟ้า',h:'#4cc9e8'}];
@@ -1641,9 +1642,9 @@ function renderCodex(){
  const tabs='<div class="row"><button class="btn'+(codexTab==='cards'?' on':'')+'" data-tab="cards">การ์ด ('+CARDS.length+' แบบ)</button><button class="btn'+(codexTab==='leaders'?' on':'')+'" data-tab="leaders">ลีดเดอร์มาเฟีย ('+BOSSES.length+' คน)</button></div>';
  let body;
  if(codexTab==='cards'){
-  body='<p class="mute">การ์ดทั้งหมด '+CARDS.length+' ชนิด · การ์ดเริ่มต้น 12 ชนิดมีให้ชนิดละ 2 ใบ ที่เหลือซื้อได้ที่ร้านการ์ด (ร้านรีทุกชั่วโมง)</p><div class="cgrid">'+CARDS.map(c=>'<div class="cx"><span class="tag">'+TYPE_N[c.t]+'</span> '+rarTag({rar:c.r})+'<b>'+c.n+'</b><div class="cost">'+costChips(c.cost)+'</div><span>'+c.d+'</span></div>').join('')+'</div>';
+  body='<p class="mute">การ์ดทั้งหมด '+CARDS.length+' ชนิด · การ์ดเริ่มต้น 12 ชนิดมีให้ชนิดละ 2 ใบ ที่เหลือซื้อได้ที่ร้านการ์ด (ร้านรีทุกชั่วโมง)</p><div class="cgrid">'+byRar(CARDS,c=>c.r).map(c=>'<div class="cx"><span class="tag">'+TYPE_N[c.t]+'</span> '+rarTag({rar:c.r})+'<b>'+c.n+'</b><div class="cost">'+costChips(c.cost)+'</div><span>'+c.d+'</span></div>').join('')+'</div>';
  }else{
-  body='<p class="mute">เลือกลีดเดอร์ได้ตอนตั้งค่าเกม แต่ละคนมีความสามารถประจำตัวที่ทำงานตลอดเกม</p><div class="cgrid">'+BOSSES.map(b=>'<div class="cx lc"><div class="pt '+b.id+'" role="img" aria-label="'+b.n+'"></div><span class="tag">ความสามารถประจำตัว</span><b>'+b.n+' '+rarTag(b)+'</b><span>'+SK(b.id)+' '+b.d+'</span><span class="mute">'+BOSS_HINT[b.id]+'</span></div>').join('')+'</div>';
+  body='<p class="mute">เลือกลีดเดอร์ได้ตอนตั้งค่าเกม แต่ละคนมีความสามารถประจำตัวที่ทำงานตลอดเกม</p><div class="cgrid">'+byRar(BOSSES,b=>rarOf(b)).map(b=>'<div class="cx lc"><div class="pt '+b.id+'" role="img" aria-label="'+b.n+'"></div><span class="tag">ความสามารถประจำตัว</span><b>'+b.n+' '+rarTag(b)+'</b><span>'+SK(b.id)+' '+b.d+'</span><span class="mute">'+BOSS_HINT[b.id]+'</span></div>').join('')+'</div>';
  }
  $('codex').innerHTML=backBtn+'<div><h1>การ์ดและลีดเดอร์</h1></div>'+tabs+body;
 }
