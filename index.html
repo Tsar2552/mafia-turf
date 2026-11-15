@@ -1378,7 +1378,7 @@ function applyView(v){
  }
 }
 
-/* ---------- โปรไฟล์ ตัง กาชา ล็อกอินรายวัน ---------- */
+/* ---------- โปรไฟล์ บาท กาชา ล็อกอินรายวัน ---------- */
 const RARC={C:'#8a8478',R:'#5b9bd5',SR:'#a97be0',SSR:'#f0b429'};
 const WIN_COIN=50,LOSE_COIN=20,PULL_COST=100,PULL10_COST=900,PITY=200,UNLOCK_SHARDS=30,SHARDS_PER_PULL=5,DUP_REFUND=25,START_COIN=300;
 const DAILY=[50,50,50,100,50,50,200];
@@ -1443,21 +1443,21 @@ function shopBuy(id){
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE))}catch(e){}}
 const gachaPool=()=>BOSSES.filter(b=>b.rar);
 const isOwned=id=>{const b=BOSSES.find(x=>x.id===id);return!!b&&(!b.rar||SAVE.owned.includes(id))};
-const coinHtml=n=>RI('w')+'<b>'+n+'</b> ตัง';
+const coinHtml=n=>RI('w')+'<b>'+n+'</b> บาท';
 /* ผลเกม: won=true ชนะ, false แพ้, null เสมอ */
 function applyResult(won){
- if(won===null||won===undefined)return{d:0,t:'เสมอ ตังไม่เปลี่ยน'};
+ if(won===null||won===undefined)return{d:0,t:'เสมอ บาทไม่เปลี่ยน'};
  const before=SAVE.coins;SAVE.coins+=won?WIN_COIN:LOSE_COIN;persist();
  const d=SAVE.coins-before;
- return{d,t:won?'ชนะ ได้ +'+d+' ตัง':'แพ้ ได้ +'+d+' ตัง'};
+ return{d,t:won?'ชนะ ได้ +'+d+' บาท':'แพ้ ได้ +'+d+' บาท'};
 }
-const resultHtml=r=>'<p class="reward">'+RI('w')+r.t+' · คงเหลือ '+SAVE.coins+' ตัง</p>';
+const resultHtml=r=>'<p class="reward">'+RI('w')+r.t+' · คงเหลือ '+SAVE.coins+' บาท</p>';
 function markPlaying(){SAVE.pending=1;persist()}
 function clearPlaying(){if(SAVE.pending){SAVE.pending=0;persist()}}
 async function settlePending(){
  if(!SAVE.pending)return;
  SAVE.pending=0;persist();
- await modal(sheet('เกมที่แล้วไม่ได้เล่นจนจบ','<p>ออกจากเกมก่อนจบ จึงไม่ได้รับตังจากเกมนั้น</p>',btn('ตกลง','ok',{pri:1})),true);
+ await modal(sheet('เกมที่แล้วไม่ได้เล่นจนจบ','<p>ออกจากเกมก่อนจบ จึงไม่ได้รับบาทจากเกมนั้น</p>',btn('ตกลง','ok',{pri:1})),true);
 }
 /* ล็อกอินรายวัน */
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -1470,7 +1470,7 @@ function dailyInfo(){
 async function dailyCheck(){
  const i=dailyInfo();if(!i)return;
  const grid=DAILY.map((r,k)=>'<div class="dd'+(k+1===i.day?' now':k+1<i.day?' got':'')+'"><span>วัน '+(k+1)+'</span><b>'+RI('w')+r+'</b></div>').join('');
- await modal(sheet('ล็อกอินรายวัน','<p>เข้าเล่นต่อเนื่องทุกวัน วันนี้เป็นวันที่ '+i.day+' ของรอบ 7 วัน (ถ้าขาดวัน ต้องเริ่มนับวันที่ 1 ใหม่)</p><div class="dgrid">'+grid+'</div>',btn('รับ '+i.reward+' ตัง','ok',{pri:1})),true);
+ await modal(sheet('ล็อกอินรายวัน','<p>เข้าเล่นต่อเนื่องทุกวัน วันนี้เป็นวันที่ '+i.day+' ของรอบ 7 วัน (ถ้าขาดวัน ต้องเริ่มนับวันที่ 1 ใหม่)</p><div class="dgrid">'+grid+'</div>',btn('รับ '+i.reward+' บาท','ok',{pri:1})),true);
  SAVE.coins+=i.reward;SAVE.last=i.today;SAVE.streak=i.day;persist();
  if(!$('menu').hidden)renderMenu();
 }
@@ -1535,23 +1535,23 @@ function rateOf(b){const t=Object.values(GACHA_W).reduce((a,c)=>a+c,0),n=gachaPo
 const pctTxt=x=>(Math.round(x*10)/10)+'%';
 function renderGacha(){
  const pb=Math.min(100,SAVE.pity/PITY*100),cl=canClaim();
- const rs=gachaRes?'<div class="gres"><h2>ผลการสุ่มล่าสุด</h2><div class="gl">'+gachaRes.map(r=>'<div class="gi r'+r.b.rar+(r.un?' un':'')+'"><span class="ring sm" style="--rc:'+RARC[r.b.rar]+'"><span class="av '+r.b.id+'"></span></span><span><b>'+esc(r.b.n)+'</b> '+rarTag(r.b)+'<br><span class="mute">'+(r.dup?'ปลดล็อกอยู่แล้ว คืน '+DUP_REFUND+' ตัง':r.un?'ปลดล็อกแล้ว!':'+'+r.sh+' เศษ')+'</span></span></div>').join('')+'</div></div>':'';
+ const rs=gachaRes?'<div class="gres"><h2>ผลการสุ่มล่าสุด</h2><div class="gl">'+gachaRes.map(r=>'<div class="gi r'+r.b.rar+(r.un?' un':'')+'"><span class="ring sm" style="--rc:'+RARC[r.b.rar]+'"><span class="av '+r.b.id+'"></span></span><span><b>'+esc(r.b.n)+'</b> '+rarTag(r.b)+'<br><span class="mute">'+(r.dup?'ปลดล็อกอยู่แล้ว คืน '+DUP_REFUND+' บาท':r.un?'ปลดล็อกแล้ว!':'+'+r.sh+' เศษ')+'</span></span></div>').join('')+'</div></div>':'';
  const cards=gachaPool().map(b=>{
   const own=isOwned(b.id),sh=own?UNLOCK_SHARDS:(SAVE.shards[b.id]||0);
   return'<div class="gc'+(own?' own':'')+'"><span class="ring" style="--rc:'+RARC[b.rar]+'"><span class="av '+b.id+'"></span></span><div class="gcb"><b>'+esc(b.n)+'</b> '+rarTag(b)+' '+SK(b.id)+'<div class="mute">'+(own?'ปลดล็อกแล้ว':'เศษ '+sh+'/'+UNLOCK_SHARDS)+' · อัตราออก '+pctTxt(rateOf(b))+'</div><div class="bar"><i style="--k:'+RARC[b.rar]+';width:'+(sh/UNLOCK_SHARDS*100)+'%"></i></div></div></div>';
  }).join('');
  const tiers=Object.keys(GACHA_W),tot=Object.values(GACHA_W).reduce((a,c)=>a+c,0);
  $('gacha').innerHTML=backBtn+'<div><h1>กาชาเศษลีดเดอร์</h1><p class="mute" style="max-width:62ch">สุ่มเก็บเศษของลีดเดอร์ใหม่ รวมครบ '+UNLOCK_SHARDS+' เศษเพื่อปลดล็อก แต่ละครั้งได้ '+SHARDS_PER_PULL+' เศษ ลีดเดอร์ที่แรร์กว่าไม่ได้แรงกว่า แต่มีสกิลที่ใช้พลิกแพลงได้มากกว่า</p></div>'+
- '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ +'+LOSE_COIN+' ตัง ทุกโหมด</span></div>'+
- '<div class="row"><button class="btn pri" data-g="p1"'+(SAVE.coins<PULL_COST?' disabled':'')+'>สุ่ม ×1<small>'+PULL_COST+' ตัง</small></button><button class="btn pri" data-g="p10"'+(SAVE.coins<PULL10_COST?' disabled':'')+'>สุ่ม ×10<small>'+PULL10_COST+' ตัง (ลดจาก '+PULL_COST*10+')</small></button></div>'+
+ '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ +'+LOSE_COIN+' บาท ทุกโหมด</span></div>'+
+ '<div class="row"><button class="btn pri" data-g="p1"'+(SAVE.coins<PULL_COST?' disabled':'')+'>สุ่ม ×1<small>'+PULL_COST+' บาท</small></button><button class="btn pri" data-g="p10"'+(SAVE.coins<PULL10_COST?' disabled':'')+'>สุ่ม ×10<small>'+PULL10_COST+' บาท (ลดจาก '+PULL_COST*10+')</small></button></div>'+
  '<div class="pity"><div class="row" style="justify-content:space-between"><span>การันตีเลือกตัวเอง: สุ่มครบ '+PITY+' ครั้ง</span><b>'+Math.min(SAVE.pity,PITY)+'/'+PITY+(SAVE.pity>PITY?' (+'+(SAVE.pity-PITY)+')':'')+'</b></div><div class="bar"><i style="--k:var(--brass);width:'+pb+'%"></i></div>'+(cl?'<button class="btn pri" data-g="claim">รับลีดเดอร์ที่เลือก (การันตี)</button>':'')+'</div>'+
  '<p class="onmsg" role="status">'+esc(gachaMsg)+'</p>'+rs+
- '<div><h2>ลีดเดอร์ในกาชา ('+gachaPool().length+' คน)</h2><p class="mute">โอกาสต่อครั้ง: '+tiers.map(t=>RAR[t]+' '+pctTxt(GACHA_W[t]/tot*100)).join(' · ')+' · ถ้าสุ่มได้ลีดเดอร์ที่ปลดล็อกแล้ว จะคืน '+DUP_REFUND+' ตัง</p><div class="ggrid">'+cards+'</div></div>'+backBtn;
+ '<div><h2>ลีดเดอร์ในกาชา ('+gachaPool().length+' คน)</h2><p class="mute">โอกาสต่อครั้ง: '+tiers.map(t=>RAR[t]+' '+pctTxt(GACHA_W[t]/tot*100)).join(' · ')+' · ถ้าสุ่มได้ลีดเดอร์ที่ปลดล็อกแล้ว จะคืน '+DUP_REFUND+' บาท</p><div class="ggrid">'+cards+'</div></div>'+backBtn;
 }
 function revealPulls(res){
  return new Promise(done=>{
   const ov=document.createElement('div');ov.className='rv';ov.setAttribute('role','dialog');ov.setAttribute('aria-label','ผลการสุ่ม');
-  const front=x=>'<span class="ring" style="--rc:'+RARC[x.b.rar]+'"><span class="av '+x.b.id+'"></span></span><b>'+esc(x.b.n)+'</b>'+rarTag(x.b)+'<small>'+(x.dup?'ซ้ำ คืน '+DUP_REFUND+' ตัง':x.un?'ปลดล็อกแล้ว!':'+'+x.sh+' เศษ')+'</small>';
+  const front=x=>'<span class="ring" style="--rc:'+RARC[x.b.rar]+'"><span class="av '+x.b.id+'"></span></span><b>'+esc(x.b.n)+'</b>'+rarTag(x.b)+'<small>'+(x.dup?'ซ้ำ คืน '+DUP_REFUND+' บาท':x.un?'ปลดล็อกแล้ว!':'+'+x.sh+' เศษ')+'</small>';
   ov.innerHTML='<p class="rvh" aria-live="polite">แตะการ์ดเพื่อเปิด</p><div class="rvg">'+res.map((x,i)=>'<button class="fc r'+x.b.rar+(x.un?' un':'')+'" style="--d:'+(i*90)+'ms;--rc:'+RARC[x.b.rar]+'" aria-label="การ์ดใบที่ '+(i+1)+' ยังไม่เปิด"><span class="fi"><span class="ff fb">?</span><span class="ff fr">'+front(x)+'</span></span></button>').join('')+'</div><div class="row rva"><button class="btn" data-x="all">เปิดทั้งหมด</button><button class="btn pri" data-x="done">เสร็จ</button></div>';
   const openOne=(c,i)=>{if(c.classList.contains('open'))return;c.classList.add('open');c.setAttribute('aria-label','การ์ดใบที่ '+(i+1)+': '+res[i].b.n)};
   ov.onclick=e=>{
@@ -1569,7 +1569,7 @@ async function gachaAct(a){
  gachaMsg='';
  if(a==='p1'||a==='p10'){
   const n=a==='p10'?10:1,r=doPull(n);
-  if(!r)gachaMsg='ตังไม่พอ';else{await revealPulls(r);gachaRes=r}
+  if(!r)gachaMsg='บาทไม่พอ';else{await revealPulls(r);gachaRes=r}
  }else if(a==='claim'){
   const left=gachaPool().filter(b=>!isOwned(b.id));
   const v=await modal(sheet('เลือกลีดเดอร์ที่จะรับ','',left.map(b=>btn(esc(b.n)+' '+rarTag(b),b.id,{sub:b.d})).join('')+btn('ยกเลิก','__x')),false,true);
@@ -1596,9 +1596,9 @@ function show(id){
 }
 const backBtn='<div><button class="btn" data-go="menu">← กลับเมนู</button></div>';
 function renderMenu(){
- const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['online','เล่นออนไลน์','สร้างห้อง ใส่เลข 5 หลัก เล่นกับเพื่อนคนละเครื่อง',1],['gacha','กาชา','สุ่มเศษลีดเดอร์ใหม่ 10 คน ปลดล็อกด้วยตังที่ได้จากการเล่น',0],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0],['lore','ประวัติตัวละคร','ชื่อ อายุ ความชอบ อริ อาชีพบังหน้า และประวัติโดยย่อของลีดเดอร์ทั้ง 6 คน',0],['shop','ร้านการ์ด','ซื้อการ์ดใหม่ ร้านรีสต็อก 20 ใบทุกชั่วโมง ซื้อครั้งละ 2 ใบ'],['deck','จัดเด็ค','เด็ค 20 ใบ ซ้ำได้ไม่เกิน 2 พร้อมจัดอัตโนมัติให้เข้ากับลีดเดอร์']];
+ const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['online','เล่นออนไลน์','สร้างห้อง ใส่เลข 5 หลัก เล่นกับเพื่อนคนละเครื่อง',1],['gacha','กาชา','สุ่มเศษลีดเดอร์ใหม่ 10 คน ปลดล็อกด้วยบาทที่ได้จากการเล่น',0],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0],['lore','ประวัติตัวละคร','ชื่อ อายุ ความชอบ อริ อาชีพบังหน้า และประวัติโดยย่อของลีดเดอร์ทั้ง 6 คน',0],['shop','ร้านการ์ด','ซื้อการ์ดใหม่ ร้านรีสต็อก 20 ใบทุกชั่วโมง ซื้อครั้งละ 2 ใบ'],['deck','จัดเด็ค','เด็ค 20 ใบ ซ้ำได้ไม่เกิน 2 พร้อมจัดอัตโนมัติให้เข้ากับลีดเดอร์']];
  $('menu').innerHTML='<div class="brand"><div class="logo" role="img" aria-label="Mafia Turf"></div><h1 class="hero">สงครามอิทธิพล</h1><p class="mute" style="max-width:52ch">ขยายอิทธิพลทีละช่อง สะสมกำลังคน ทรัพย์สิน และเส้นสายให้ครบอย่างละ 100 ก่อนใคร หรือล้อมฐานคู่แข่งให้จนมุม</p></div>'+
- '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ +'+LOSE_COIN+' ตัง ทุกโหมด</span></div><div class="tiles">'+T.map(t=>'<button class="tile'+(t[3]?' pri':'')+'" data-go="'+t[0]+'"><b>'+t[1]+'</b><span>'+t[2]+'</span></button>').join('')+'</div>';
+ '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ +'+LOSE_COIN+' บาท ทุกโหมด</span></div><div class="tiles">'+T.map(t=>'<button class="tile'+(t[3]?' pri':'')+'" data-go="'+t[0]+'"><b>'+t[1]+'</b><span>'+t[2]+'</span></button>').join('')+'</div>';
 }
 const RULES=[
  ['เป้าหมาย',['ชนะเมื่อมีผู้เล่นที่มี กำลังคน ทรัพย์สิน และเส้นสาย ครบอย่างละ 100 หรือมากกว่า (โหมดทีม ทั้งทีมชนะ)','หรือชนะด้วยการกำจัดคู่แข่งจนเหลือฝั่งเดียวบนกระดาน']],
@@ -1609,7 +1609,7 @@ const RULES=[
  ['เลเวลลูกน้อง',['เลเวล 1 ถึง 5 อัปได้ด้วยการชนะการปะทะ: เลเวล 1→2 ต้องชนะ 2 ครั้ง 2→3 ชนะ 3 ครั้ง 3→4 ชนะ 4 ครั้ง 4→5 ชนะ 5 ครั้ง','หรืออัปด้วยการ์ดฝึกพิเศษ']],
  ['ล้อมฐาน',['ส่งลูกน้องไปยืนครบทุกช่องรอบฐานของคู่แข่งจนไม่มีทางออก คู่แข่งคนนั้นจะตกรอบทันที ลูกน้องและพื้นที่ของเขาจะหายไป']],
  ['สถานที่พิเศษ (โหมดหลัก 20×20)',['🏠 ฐานย่อย: ถ้าช่องนี้เป็นของคุณ ลูกน้องใหม่จะเกิดที่นี่แทนฐานหลัก (ถ้ายังว่าง) ศัตรูยึดได้','🏥 โรงพยาบาล: ลูกน้องที่แพ้การปะทะไม่ตาย แต่ถูกหามมาที่โรงพยาบาลที่ว่างใกล้ฐานตัวเองที่สุดและลด 1 เลเวล (เลเวล 1 ไม่ลด) ถ้าไม่มีที่ว่างจะตกรอบเหมือนเดิม','🎰 บ่อนคาสิโน: เจ้าของช่องได้ทรัพย์สิน +1 ทุกสิ้นเทิร์น','🥊 ค่ายฝึก: ลูกน้องที่ก้าวเข้าไปได้ชัยชนะสะสมเพิ่ม 1 ครั้ง (ค่ายพัก 3 รอบ)','🗼 หอสังเกตการณ์: ถ้าช่องนี้เป็นของคุณ จะเห็นลูกน้องศัตรูในระยะ 2 ช่อง','โหมด Mini 10×10: ไม่มีสถานที่พิเศษ ชนะเมื่อสะสมครบอย่างละ 50 และได้รายได้ทุก 5 ช่อง']],
- ['เด็คและร้านการ์ด',['ทุกคนมีเด็คของตัวเอง 20 ใบ ใส่ซ้ำได้ไม่เกิน 2 ใบ และแต่ละลีดเดอร์มีเด็คแยกกัน (จัดได้ที่เมนู จัดเด็ค พร้อมปุ่มจัดอัตโนมัติ)','เด็คหมดแล้วระบบสับกองทิ้งกลับมาเป็นเด็คใหม่','การ์ดมีทั้งหมด 40 ชนิด เริ่มต้นมี 12 ชนิดชนิดละ 2 ใบ ที่เหลือซื้อที่ร้านการ์ดด้วยตัง ร้านรีสต็อก 20 ใบทุกชั่วโมง ซื้อครั้งหนึ่งได้ 2 ใบ','ผู้เล่นออนไลน์ที่เป็นแขกใช้เด็คอัตโนมัติจากการ์ดเริ่มต้น']],
+ ['เด็คและร้านการ์ด',['ทุกคนมีเด็คของตัวเอง 20 ใบ ใส่ซ้ำได้ไม่เกิน 2 ใบ และแต่ละลีดเดอร์มีเด็คแยกกัน (จัดได้ที่เมนู จัดเด็ค พร้อมปุ่มจัดอัตโนมัติ)','เด็คหมดแล้วระบบสับกองทิ้งกลับมาเป็นเด็คใหม่','การ์ดมีทั้งหมด 40 ชนิด เริ่มต้นมี 12 ชนิดชนิดละ 2 ใบ ที่เหลือซื้อที่ร้านการ์ดด้วยบาท ร้านรีสต็อก 20 ใบทุกชั่วโมง ซื้อครั้งหนึ่งได้ 2 ใบ','ผู้เล่นออนไลน์ที่เป็นแขกใช้เด็คอัตโนมัติจากการ์ดเริ่มต้น']],
  ['โหมดการเล่น',['1 vs บอท / 1 vs 1 / 2 vs 2 (ทีมมุมทแยงกัน) / FFA 4 คนต่างคนต่างสู้','เล่นหลายคนในเครื่องเดียวจะมีหน้าจอบังให้ส่งเครื่องต่อทุกครั้งที่เปลี่ยนผู้เล่น'] ]
 ];
 function renderRules(){
@@ -1652,9 +1652,9 @@ function renderShop(){
  const h=shopSync(),st=shopStock(h);
  const items=st.map(c=>{
   const sold=SAVE.shopBought.includes(c.id),have=owns(c.id),full=have>=2,pr=PRICE[c.r],poor=SAVE.coins<pr;
-  return cardBox(c,'<span class="mute">มีอยู่ '+have+' ใบ</span><button class="btn pri buy" data-s="buy" data-id="'+c.id+'"'+(sold||full||poor?' disabled':'')+'>'+(sold?'ซื้อแล้วในชั่วโมงนี้':full?'มีครบ 2 ใบแล้ว':'ซื้อ 2 ใบ · '+pr+' ตัง')+'</button>',sold||full?' sold':'');
+  return cardBox(c,'<span class="mute">มีอยู่ '+have+' ใบ</span><button class="btn pri buy" data-s="buy" data-id="'+c.id+'"'+(sold||full||poor?' disabled':'')+'>'+(sold?'ซื้อแล้วในชั่วโมงนี้':full?'มีครบ 2 ใบแล้ว':'ซื้อ 2 ใบ · '+pr+' บาท')+'</button>',sold||full?' sold':'');
  }).join('');
- $('shop').innerHTML=backBtn+'<div><h1>ร้านการ์ด</h1><p class="mute" style="max-width:62ch">ร้านมีการ์ด '+SHOP_N+' ใบ รีสต็อกใหม่ทุกชั่วโมง ซื้อหนึ่งครั้งได้การ์ดนั้น 2 ใบทันที ราคาตามความแรร์: ทั่วไป '+PRICE.C+' · หายาก '+PRICE.R+' · หายากมาก '+PRICE.SR+' · ตำนาน '+PRICE.SSR+' ตัง</p></div>'+
+ $('shop').innerHTML=backBtn+'<div><h1>ร้านการ์ด</h1><p class="mute" style="max-width:62ch">ร้านมีการ์ด '+SHOP_N+' ใบ รีสต็อกใหม่ทุกชั่วโมง ซื้อหนึ่งครั้งได้การ์ดนั้น 2 ใบทันที ราคาตามความแรร์: ทั่วไป '+PRICE.C+' · หายาก '+PRICE.R+' · หายากมาก '+PRICE.SR+' · ตำนาน '+PRICE.SSR+' บาท</p></div>'+
   '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ร้านรีสต็อกในอีก <b id="shopcd">'+fmtCd((h+1)*HOUR-Date.now())+'</b></span></div><div class="cgrid">'+items+'</div>';
  clearInterval(shopT);
  shopT=setInterval(()=>{if($('shop').hidden){clearInterval(shopT);return}if(shopHour()!==h){renderShop();return}const e=$('shopcd');if(e)e.textContent=fmtCd((h+1)*HOUR-Date.now())},1000);
@@ -1662,7 +1662,7 @@ function renderShop(){
 async function shopAct(id){
  if(!shopBuy(id))return;
  const c=cardById(id);
- await modal(sheet('ซื้อสำเร็จ','<p>ได้ <b>'+c.n+'</b> เพิ่ม 2 ใบ (มีทั้งหมด '+owns(id)+' ใบ)</p><p class="mute">คงเหลือ '+SAVE.coins+' ตัง</p>',btn('ตกลง','ok',{pri:1})));
+ await modal(sheet('ซื้อสำเร็จ','<p>ได้ <b>'+c.n+'</b> เพิ่ม 2 ใบ (มีทั้งหมด '+owns(id)+' ใบ)</p><p class="mute">คงเหลือ '+SAVE.coins+' บาท</p>',btn('ตกลง','ok',{pri:1})));
  const y=window.scrollY;renderShop();window.scrollTo(0,y);
 }
 function curDeck(){if(!Array.isArray(SAVE.decks[deckBoss])){SAVE.decks[deckBoss]=deckFor(deckBoss);persist()}return SAVE.decks[deckBoss]}
