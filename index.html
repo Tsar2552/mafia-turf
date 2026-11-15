@@ -272,7 +272,7 @@ div.btn.skill{cursor:default}
 .scb{display:grid;gap:4px;min-width:0;font-size:13px}
 .scb b{font-size:15px}
 .prof .pt{transform:scaleX(-1)}
-.lcn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(8px,1.7vw,17px);text-decoration:none;opacity:1;pointer-events:none;line-height:1;text-shadow:0 0 2px #000,0 0 4px #000,0 0 6px #000}.lcn.sm{inset:0 0 auto auto;font-size:clamp(6px,1vw,10px);align-items:flex-start;justify-content:flex-end}.cx.sold,.cx.dim{opacity:.6}.cx .buy{margin-top:4px}.qty{display:flex;align-items:center;gap:10px}.qty b{min-width:52px;text-align:center}.rsel{display:flex;flex-wrap:wrap;gap:8px}.lsel{display:inline-flex;align-items:center;gap:6px}.cx .tag{font-size:12px;color:var(--mute)}.cx .row{gap:6px;flex-wrap:wrap}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
+.lcn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(8px,1.7vw,17px);text-decoration:none;opacity:1;pointer-events:none;line-height:1;text-shadow:0 0 2px #000,0 0 4px #000,0 0 6px #000}.lcn.sm{inset:0 0 auto auto;font-size:clamp(6px,1vw,10px);align-items:flex-start;justify-content:flex-end}.cx.sold,.cx.dim{opacity:.6}.cx .buy{margin-top:4px}.qty{display:flex;align-items:center;gap:10px}.qty b{min-width:52px;text-align:center}.rsel{display:flex;flex-wrap:wrap;gap:8px}.lsel{display:inline-flex;align-items:center;gap:6px}.cx .tag{font-size:12px;color:var(--mute)}.cx .row{gap:6px;flex-wrap:wrap}.board.mini .mn{font-size:clamp(15px,3.6vw,26px)}.board.mini .mn small{font-size:55%}.board.mini .mn .st{width:28%;height:28%}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 </style>
 </head>
 <body>
@@ -394,7 +394,7 @@ function makeLocs(){
 }
 function setBoard(sz){
  sz=sz===10?10:20;N=sz;INC=sz===10?5:10;GOAL=sz===10?50:100;
- try{const t='repeat('+N+',minmax(0,1fr))',b=$('board').style;b.gridTemplateColumns=t;b.gridTemplateRows=t;$('ax').style.gridTemplateColumns=t;$('ay').style.gridTemplateRows=t;buildAxis()}catch(e){}
+ try{const t='repeat('+N+',minmax(0,1fr))',b=$('board').style;b.gridTemplateColumns=t;b.gridTemplateRows=t;$('board').classList.toggle('mini',N===10);$('ax').style.gridTemplateColumns=t;$('ay').style.gridTemplateRows=t;buildAxis()}catch(e){}
 }
 const dist=(a,b)=>{const[p,q]=xy(a),[r,s]=xy(b);return Math.abs(p-r)+Math.abs(q-s)};
 const allies=(a,b)=>a===b||G.players[a].team===G.players[b].team;
@@ -416,7 +416,9 @@ function initGame(cfg){
  G={players:[],cells:Array.from({length:N*N},()=>({o:-1,b:-1})),minions:[],deck:[],discard:[],log:[],turn:0,round:1,over:null,viewer:-1,actor:-1,scout:-1,busy:false,sel:null,mid:1,mode:cfg.mode,humans:0,endTurn:null,lastCard:null,size:N,locs:makeLocs(),locr:{}};
  cfg.seats.forEach((s,i)=>{
   const p={id:i,name:s.name,type:s.type,color:s.color,boss:s.boss,team:teams[i],base:corners[i],res:{m:5,w:5,c:5},hand:[],deck:shuffle(seatDeck(s).map(cardById)),discard:[],alive:true,cd:0,turns:0};
-  G.players.push(p);G.cells[p.base]={o:i,b:i};addMinion(p,s.mname,p.base);draw(p,5);
+  G.players.push(p);G.cells[p.base]={o:i,b:i};addMinion(p,s.mname,p.base);
+  if(N===10){const c=(N-1)/2,nb=nbrs(p.base).sort((a,b)=>Math.abs(xy(a)[0]-c)+Math.abs(xy(a)[1]-c)-Math.abs(xy(b)[0]-c)-Math.abs(xy(b)[1]-c))[0];G.cells[nb]={o:i,b:-1};addMinion(p,botName(),nb)}
+  draw(p,5);
   if(s.type==='human')G.humans++;
  });
 }
@@ -1602,7 +1604,7 @@ function renderMenu(){
 }
 const RULES=[
  ['เป้าหมาย',['ชนะเมื่อมีผู้เล่นที่มี กำลังคน ทรัพย์สิน และเส้นสาย ครบอย่างละ 100 หรือมากกว่า (โหมดทีม ทั้งทีมชนะ)','หรือชนะด้วยการกำจัดคู่แข่งจนเหลือฝั่งเดียวบนกระดาน']],
- ['เริ่มเกม',['กระดาน 20×20 ทุกคนมีฐานหลัก 1 ช่องที่มุม','ทรัพยากรตั้งต้นอย่างละ 5 (รวม 15) ลูกน้อง 1 คนยืนในฐาน และการ์ดในมือ 5 ใบจากกองกลาง','ลูกน้องทุกคนต้องตั้งชื่อ ไม่เกิน 14 ตัวอักษร']],
+ ['เริ่มเกม',['กระดาน 20×20 (Mini 10×10 เริ่มด้วยลูกน้อง 2 คน) ทุกคนมีฐานหลัก 1 ช่องที่มุม','ทรัพยากรตั้งต้นอย่างละ 5 (รวม 15) ลูกน้อง 1 คนยืนในฐาน และการ์ดในมือ 5 ใบจากกองกลาง','ลูกน้องทุกคนต้องตั้งชื่อ ไม่เกิน 14 ตัวอักษร']],
  ['ในแต่ละเทิร์น',['ต้นเทิร์นจั่วการ์ด 1 ใบ ถ้ามือเกิน 6 ใบต้องทิ้งจนเหลือ 6','ช่วงเล่นทำได้ 3 อย่าง: เล่นการ์ดโดยจ่ายทรัพยากร / เดินลูกน้องคนละ 1 ช่อง (บน ล่าง ซ้าย ขวา) / จบเทิร์น','เมื่อจบเทิร์น ได้ทรัพยากรทั้ง 3 ชนิดอย่างละ 1 ต่อพื้นที่ที่ครอบครองทุก 10 ช่อง']],
  ['พื้นที่และความลับ',['ช่องที่ลูกน้องเดินไปจะกลายเป็นพื้นที่ของคุณ ถ้าศัตรูเดินมาทับตอนไม่มีใครอยู่ ช่องนั้นจะเปลี่ยนเป็นของศัตรู','ฐานหลักเปลี่ยนเจ้าของไม่ได้','สีบนกระดานบอกว่าช่องนั้นของใคร แต่ไม่บอกว่ามีลูกน้องอยู่หรือไม่ คุณเห็นเฉพาะลูกน้องของตัวเองและพวกเดียวกัน']],
  ['การปะทะ',['เมื่อเดินไปทับช่องที่มีลูกน้องศัตรู จะเกิดการปะทะ ทั้งสองฝ่ายเห็นเลเวลของกันและกัน แล้วเลือกสู้หรือหนี','ฝ่ายที่หนีเสียพื้นที่ที่เคยยืน ถ้าหนีทั้งคู่ ช่องนั้นกลายเป็นอิทธิพลว่าง','ถ้าสู้ทั้งคู่ ฝ่ายเลเวลสูงกว่าชนะทันที ถ้าเลเวลเท่ากันให้เป่ายิงฉุบ ผู้แพ้เสียลูกน้อง ผู้ชนะยึดช่องนั้น']],
