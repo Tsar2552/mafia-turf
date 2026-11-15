@@ -272,7 +272,7 @@ div.btn.skill{cursor:default}
 .scb{display:grid;gap:4px;min-width:0;font-size:13px}
 .scb b{font-size:15px}
 .prof .pt{transform:scaleX(-1)}
-.lc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(8px,1.7vw,17px);text-decoration:none;opacity:1;pointer-events:none;line-height:1;text-shadow:0 0 2px #000,0 0 4px #000,0 0 6px #000}.lc.sm{inset:0 0 auto auto;font-size:clamp(6px,1vw,10px);align-items:flex-start;justify-content:flex-end}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
+.lcn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(8px,1.7vw,17px);text-decoration:none;opacity:1;pointer-events:none;line-height:1;text-shadow:0 0 2px #000,0 0 4px #000,0 0 6px #000}.lcn.sm{inset:0 0 auto auto;font-size:clamp(6px,1vw,10px);align-items:flex-start;justify-content:flex-end}.cx.sold,.cx.dim{opacity:.6}.cx .buy{margin-top:4px}.qty{display:flex;align-items:center;gap:10px}.qty b{min-width:52px;text-align:center}.rsel{display:flex;flex-wrap:wrap;gap:8px}.lsel{display:inline-flex;align-items:center;gap:6px}.cx .tag{font-size:12px;color:var(--mute)}.cx .row{gap:6px;flex-wrap:wrap}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 </style>
 </head>
 <body>
@@ -283,7 +283,7 @@ div.btn.skill{cursor:default}
 <section id="codex" class="stack" hidden></section>
 <section id="lore" class="stack" hidden></section>
 <section id="online" class="stack" hidden></section>
-<section id="gacha" class="stack" hidden></section>
+<section id="gacha" class="stack" hidden></section><section id="shop" class="stack" hidden></section><section id="deck" class="stack" hidden></section>
 <section id="setup" class="stack" hidden></section>
 <section id="game" hidden>
   <div class="row" style="justify-content:space-between"><div class="row"><div class="mark" role="img" aria-label="Mafia Turf"></div><h1>สงครามอิทธิพล</h1></div><button class="btn" id="quit">กลับหน้าตั้งค่า</button></div>
@@ -325,19 +325,49 @@ const BOSSES=[
  {id:'booze',n:'นายหัวสุรา',rar:'SSR',kind:'active',sn:'เหล้าเลี้ยงทหาร',cd:8,d:'เลือกลูกน้อง 1 คนที่เดินไปแล้ว เดินได้อีก 1 ครั้ง ใช้ซ้ำได้ทุก 8 เทิร์น'}
 ];
 const CARDS=[
- {id:'duo',n:'เกณฑ์ลูกน้อง 2 คน',cost:{m:5,w:5},t:'spawn',v:2,k:4,d:'ได้ลูกน้องใหม่ 2 คน'},
- {id:'one',n:'รับสมัครเด็กใหม่',cost:{m:3,w:1},t:'spawn',v:1,k:5,d:'ได้ลูกน้องใหม่ 1 คน'},
- {id:'train',n:'ฝึกพิเศษ',cost:{m:2,w:2},t:'lvl',k:4,d:'ลูกน้อง 1 คนที่เลือก เลเวล +1'},
- {id:'smug',n:'ขายของเถื่อน',cost:{m:3},t:'gain',g:{w:5},k:2,d:'ได้ทรัพย์สิน 5'},
- {id:'protect',n:'เรียกค่าคุ้มครอง',cost:{c:3},t:'gain',g:{m:3,w:3},k:2,d:'ได้กำลังคน 3 และทรัพย์สิน 3'},
- {id:'party',n:'จัดงานเลี้ยง',cost:{w:4},t:'gain',g:{c:6},k:2,d:'ได้เส้นสาย 6'},
- {id:'threat',n:'ข่มขู่คนใหญ่คนโต',cost:{m:4},t:'gain',g:{c:6},k:2,d:'ได้เส้นสาย 6'},
- {id:'squeeze',n:'รีดไถ',cost:{c:2},t:'gain',g:{w:4},k:2,d:'ได้ทรัพย์สิน 4'},
- {id:'steal',n:'ปล้นคลังคู่แข่ง',cost:{c:2},t:'steal',k:2,d:'เลือกคู่แข่งและชนิดทรัพยากร ชิงมา 4 หน่วย'},
- {id:'grab',n:'ยึดพื้นที่',cost:{m:2,w:2},t:'grab',v:2,k:3,d:'ยึดช่องที่ติดกับพื้นที่ของคุณ 2 ช่อง (ไม่รวมฐาน)'},
- {id:'scout',n:'สายสืบ',cost:{c:2},t:'scout',k:3,d:'เห็นลูกน้องศัตรูทั้งกระดานจนจบเทิร์น'},
- {id:'draw',n:'ติดต่อวงใน',cost:{c:1},t:'draw',v:2,k:3,d:'จั่วการ์ด 2 ใบ'}
+ {id:'duo',n:'เกณฑ์ลูกน้อง 2 คน',cost:{m:5,w:5},t:'spawn',r:'C',d:'ได้ลูกน้องใหม่ 2 คน',v:2},
+ {id:'one',n:'รับสมัครเด็กใหม่',cost:{m:3,w:1},t:'spawn',r:'C',d:'ได้ลูกน้องใหม่ 1 คน',v:1},
+ {id:'train',n:'ฝึกพิเศษ',cost:{m:2,w:2},t:'lvl',r:'C',d:'ลูกน้อง 1 คนที่เลือก เลเวล +1'},
+ {id:'smug',n:'ขายของเถื่อน',cost:{m:3},t:'gain',r:'C',d:'ได้ทรัพย์สิน 5',g:{w:5}},
+ {id:'protect',n:'เรียกค่าคุ้มครอง',cost:{c:3},t:'gain',r:'C',d:'ได้กำลังคน 3 และทรัพย์สิน 3',g:{m:3,w:3}},
+ {id:'party',n:'จัดงานเลี้ยง',cost:{w:4},t:'gain',r:'C',d:'ได้เส้นสาย 6',g:{c:6}},
+ {id:'threat',n:'ข่มขู่คนใหญ่คนโต',cost:{m:4},t:'gain',r:'C',d:'ได้เส้นสาย 6',g:{c:6}},
+ {id:'squeeze',n:'รีดไถ',cost:{c:2},t:'gain',r:'C',d:'ได้ทรัพย์สิน 4',g:{w:4}},
+ {id:'steal',n:'ปล้นคลังคู่แข่ง',cost:{c:2},t:'steal',r:'C',d:'เลือกคู่แข่งและชนิดทรัพยากร ชิงมา 4 หน่วย'},
+ {id:'grab',n:'ยึดพื้นที่',cost:{m:2,w:2},t:'grab',r:'C',d:'ยึดช่องที่ติดกับพื้นที่ของคุณ 2 ช่อง (ไม่รวมฐาน)',v:2},
+ {id:'scout',n:'สายสืบ',cost:{c:2},t:'scout',r:'C',d:'เห็นลูกน้องศัตรูทั้งกระดานจนจบเทิร์น'},
+ {id:'draw',n:'ติดต่อวงใน',cost:{c:1},t:'draw',r:'C',d:'จั่วการ์ด 2 ใบ',v:2},
+ {id:'loan',n:'เงินกู้นอกระบบ',cost:{c:1},t:'gain',r:'C',d:'ได้ทรัพย์สิน 5',g:{w:5}},
+ {id:'recruitpro',n:'มือปราบรับจ้าง',cost:{m:4,w:4},t:'spawn',r:'R',d:'ได้ลูกน้อง 1 คนที่เลเวล 3 ทันที',v:1,lv:3},
+ {id:'veteran',n:'ทหารผ่านศึก',cost:{m:6,w:6,c:2},t:'spawn',r:'SR',d:'ได้ลูกน้อง 1 คนที่เลเวล 4 ทันที',v:1,lv:4},
+ {id:'gang',n:'แก๊งสามเกลอ',cost:{m:7,w:6},t:'spawn',r:'R',d:'ได้ลูกน้องใหม่ 3 คน',v:3},
+ {id:'drill',n:'ซ้อมหนัก',cost:{m:2},t:'xp',r:'C',d:'ลูกน้อง 1 คนได้ชัยชนะสะสม +2',v:2},
+ {id:'bootcamp',n:'ค่ายเก็บตัว',cost:{m:3,w:3},t:'xp',r:'R',d:'ลูกน้อง 1 คนได้ชัยชนะสะสม +4',v:4},
+ {id:'promote',n:'เลื่อนตำแหน่งด่วน',cost:{c:3},t:'lvl',r:'R',d:'ลูกน้อง 1 คนที่เลือก เลเวล +1 จ่ายด้วยเส้นสาย'},
+ {id:'elite',n:'กองกำลังพิเศษ',cost:{m:6,w:6,c:6},t:'lvlall',r:'SSR',d:'ลูกน้องทุกคนของคุณ เลเวล +1'},
+ {id:'tax',n:'เก็บส่วยทั้งย่าน',cost:{c:3},t:'tax',r:'R',d:'ชิงทรัพยากรที่มากสุดของคู่แข่งทุกคนคนละ 1',v:1},
+ {id:'rob',n:'ปล้นขบวนรถ',cost:{m:3},t:'steal',r:'R',d:'เลือกคู่แข่งและชนิดทรัพยากร ชิงมา 6 หน่วย',v:6},
+ {id:'sabotage',n:'ก่อวินาศกรรม',cost:{w:2},t:'steal',r:'C',d:'คู่แข่งที่เลือกเสียทรัพยากรที่เลือก 5 (คุณไม่ได้)',v:5,nogain:1},
+ {id:'smear',n:'ปล่อยข่าวเสีย',cost:{c:2},t:'hexc',r:'R',d:'คู่แข่งทุกคนทิ้งการ์ดในมือแบบสุ่ม 1 ใบ',v:1},
+ {id:'purge',n:'ล้างบางวงใน',cost:{c:5},t:'hexc',r:'SR',d:'คู่แข่งทุกคนทิ้งการ์ดในมือแบบสุ่ม 2 ใบ',v:2},
+ {id:'rake',n:'หักหัวคิว',cost:{m:1},t:'inc',r:'C',d:'รับรายได้ประจำเทิร์นทันที 1 รอบ',v:1},
+ {id:'harvest',n:'เก็บเกี่ยวใหญ่',cost:{c:2},t:'inc',r:'SR',d:'รับรายได้ประจำเทิร์นทันที 2 รอบ',v:2},
+ {id:'invest',n:'เงินลงทุน',cost:{w:5},t:'gain',r:'R',d:'ได้กำลังคน 4 และเส้นสาย 4',g:{m:4,c:4}},
+ {id:'dealer',n:'พ่อค้าคนกลาง',cost:{w:3},t:'gain',r:'C',d:'ได้กำลังคน 4 และเส้นสาย 2',g:{m:4,c:2}},
+ {id:'vault',n:'เปิดตู้เซฟ',cost:{c:3,m:3},t:'gain',r:'R',d:'ได้ทรัพย์สิน 12',g:{w:12}},
+ {id:'jackpot',n:'แจ็กพอต',cost:{m:2,w:2,c:2},t:'gain',r:'SSR',d:'ได้ทรัพยากรทุกชนิดอย่างละ 5',g:{m:5,w:5,c:5}},
+ {id:'landgrab',n:'ยึดพื้นที่ใหญ่',cost:{m:4,w:4},t:'grab',r:'R',d:'ยึดช่องที่ติดกับพื้นที่ของคุณ 4 ช่อง',v:4},
+ {id:'landrush',n:'ปักป้ายจอง',cost:{w:1},t:'grab',r:'C',d:'ยึดช่องที่ติดกับพื้นที่ของคุณ 1 ช่อง',v:1},
+ {id:'blitz',n:'บุกสายฟ้า',cost:{m:3,w:3},t:'grab',r:'R',d:'ยึดช่องที่ติดกับพื้นที่ของคุณ 3 ช่อง',v:3},
+ {id:'scout2',n:'นกรู้',cost:{c:2},t:'scout',r:'R',d:'เห็นลูกน้องศัตรูทั้งกระดานจนจบเทิร์น และจั่วการ์ด 1 ใบ',dr:1},
+ {id:'network',n:'ข่ายข่าวกรอง',cost:{c:3},t:'draw',r:'R',d:'จั่วการ์ด 4 ใบ',v:4},
+ {id:'intel',n:'ข้อมูลวงใน',cost:{w:2},t:'draw',r:'C',d:'จั่วการ์ด 2 ใบ และได้เส้นสาย 2',v:2,g:{c:2}},
+ {id:'reload',n:'สับไพ่ใหม่',cost:{c:1},t:'draw',r:'C',d:'จั่วการ์ด 1 ใบ และได้กำลังคน 1 ทรัพย์สิน 1',v:1,g:{m:1,w:1}},
+ {id:'rest',n:'พักม้า',cost:{w:3},t:'rest',r:'R',d:'ลูกน้อง 1 คนที่เดินไปแล้ว เดินได้อีกครั้ง',nb:1},
+ {id:'tithe',n:'ค่าธรรมเนียมโหด',cost:{m:5},t:'gain',r:'C',d:'ได้เส้นสาย 9',g:{c:9}}
 ];
+const STARTER=['duo','one','train','smug','protect','party','threat','squeeze','steal','grab','scout','draw'];
+const cardById=id=>CARDS.find(c=>c.id===id);
 const NAMES=['เสี่ยหมู','ไอ้แมว','ตาเหลือก','เฮียตง','แม่นกยูง','ลุงเหล็ก','อาตี๋','จ่าเสือ','พี่บอส','เจ๊ฝอย','ปู่ดำ','น้าเขี้ยว','หนุ่มเงา','เด็กสอง','ไอ้เกลียว','มือปืนจิ๋ว','ตี๋ใหญ่','ป๋าเพชร','ลูกชายเสือ','พญาไฟ','เสือโหด','เก่งกาจ','มังกรเขียว','ไอ้หนวด'];
 let G=null,FAST=false;
 function turnToast(p){
@@ -377,16 +407,15 @@ const log=t=>{G.log.unshift(t);if(G.log.length>40)G.log.pop()};
 const terr=p=>G.cells.filter(c=>c.o===p.id).length;
 const botName=()=>NAMES[rnd(NAMES.length)];
 
-function buildDeck(){const d=[];CARDS.forEach(c=>{for(let i=0;i<c.k*2;i++)d.push(c)});return shuffle(d)}
-function draw(p,n){for(let i=0;i<n;i++){if(!G.deck.length){G.deck=shuffle(G.discard);G.discard=[]}if(!G.deck.length)return;p.hand.push(G.deck.pop())}}
+function draw(p,n){for(let i=0;i<n;i++){if(!p.deck.length){p.deck=shuffle(p.discard);p.discard=[]}if(!p.deck.length)return;p.hand.push(p.deck.pop())}}
 function addMinion(p,name,pos){const used=new Set(mine(p).map(x=>x.tag)),tag=[...'ABCDEFGHJKLMNPQRSTUVWXYZ'].find(c=>!used.has(c))||'*';const m={id:G.mid++,tag,name:clip(name)||botName(),owner:p.id,pos,lvl:1,wins:0,moved:false};G.minions.push(m);return m}
 function initGame(cfg){
  setBoard(cfg.size);
  const corners=cfg.seats.length===2?[0,N*N-1]:[0,N-1,N*(N-1),N*N-1];
  const teams=cfg.mode==='2v2'?[0,1,1,0]:cfg.seats.map((_,i)=>i);
- G={players:[],cells:Array.from({length:N*N},()=>({o:-1,b:-1})),minions:[],deck:buildDeck(),discard:[],log:[],turn:0,round:1,over:null,viewer:-1,actor:-1,scout:-1,busy:false,sel:null,mid:1,mode:cfg.mode,humans:0,endTurn:null,lastCard:null,size:N,locs:makeLocs(),locr:{}};
+ G={players:[],cells:Array.from({length:N*N},()=>({o:-1,b:-1})),minions:[],deck:[],discard:[],log:[],turn:0,round:1,over:null,viewer:-1,actor:-1,scout:-1,busy:false,sel:null,mid:1,mode:cfg.mode,humans:0,endTurn:null,lastCard:null,size:N,locs:makeLocs(),locr:{}};
  cfg.seats.forEach((s,i)=>{
-  const p={id:i,name:s.name,type:s.type,color:s.color,boss:s.boss,team:teams[i],base:corners[i],res:{m:5,w:5,c:5},hand:[],alive:true,cd:0,turns:0};
+  const p={id:i,name:s.name,type:s.type,color:s.color,boss:s.boss,team:teams[i],base:corners[i],res:{m:5,w:5,c:5},hand:[],deck:shuffle(seatDeck(s).map(cardById)),discard:[],alive:true,cd:0,turns:0};
   G.players.push(p);G.cells[p.base]={o:i,b:i};addMinion(p,s.mname,p.base);draw(p,5);
   if(s.type==='human')G.humans++;
  });
@@ -576,7 +605,7 @@ function render(){
   let inner='';
   if(m){const pc=COLORS[G.players[m.owner].color].h;inner='<i class="mn'+(m.moved&&m.owner===G.actor?' done':'')+'" style="--c:'+pc+';--t:'+txtCol(pc)+'"><b class="id">'+m.tag+'</b><small>'+m.lvl+'</small>'+(m.owner===G.actor?'<b class="st '+(m.moved?'done':'ready')+'"></b>':'')+'</i>'}
   else if(foe.has(i)){const mm=G.minions.find(x=>x.pos===i),pc=COLORS[G.players[mm.owner].color].h;inner='<i class="mn foe" style="--c:'+pc+';--t:'+txtCol(pc)+'">?</i>'}
-  {const L=G.locs&&G.locs[i];if(L)inner+='<u class="lc'+(m||foe.has(i)?' sm':'')+'" title="'+LOCS[L].n+'">'+LOCS[L].g+'</u>'}
+  {const L=G.locs&&G.locs[i];if(L)inner+='<u class="lcn'+(m||foe.has(i)?' sm':'')+'" title="'+LOCS[L].n+'">'+LOCS[L].g+'</u>'}
   h+='<div class="'+cls+'" data-i="'+i+'"'+(o?' style="background:'+tint(COLORS[o.color].h,c.b>=0?.92:.6)+'"':'')+'>'+inner+'</div>';
  }
  $('board').innerHTML=h;
@@ -594,7 +623,7 @@ function renderSide(v){
  if(v&&v.alive){
   h+=skillBlock(v);
   h+='<div><h2>ลูกน้องของ '+esc(v.name)+'</h2><div class="ml">'+mine(v).map(m=>'<button class="btn mrow'+(G.sel===m.id?' on':'')+'" data-act="sel" data-id="'+m.id+'"'+(G.actor!==v.id||m.moved?' disabled':'')+'><span>'+tagChip(m)+esc(m.name)+' · '+coord(m.pos)+' · เลเวล '+m.lvl+(m.lvl<5?' ('+m.wins+'/'+need(m)+')':' สูงสุด')+'</span><span class="mute">'+(m.moved?'เดินแล้ว':'พร้อมเดิน')+'</span></button>').join('')+'</div></div>';
-  h+='<div><h2>การ์ดในมือ ('+v.hand.length+')</h2><div class="hand">'+(v.hand.length?v.hand.map((c,i)=>'<button class="card" data-act="card" data-i="'+i+'"'+(G.actor!==v.id||G.busy||!canPay(v,c.cost)?' disabled':'')+'><b>'+c.n+'</b><span class="cost">'+RK.filter(k=>c.cost[k]).map(k=>'<span class="chip" style="color:'+RC[k]+'">'+RI(k)+RN[k]+' '+c.cost[k]+'</span>').join('')+'</span><small>'+c.d+'</small></button>').join(''):'<span class="mute">ไม่มีการ์ด</span>')+'</div></div>';
+  h+='<div><h2>การ์ดในมือ ('+v.hand.length+') <span class="mute">· เด็คเหลือ '+(v.deck?v.deck.length:(v.deckN||0))+'</span></h2><div class="hand">'+(v.hand.length?v.hand.map((c,i)=>'<button class="card" data-act="card" data-i="'+i+'"'+(G.actor!==v.id||G.busy||!canPay(v,c.cost)?' disabled':'')+'><b>'+c.n+'</b><span class="cost">'+RK.filter(k=>c.cost[k]).map(k=>'<span class="chip" style="color:'+RC[k]+'">'+RI(k)+RN[k]+' '+c.cost[k]+'</span>').join('')+'</span><small>'+c.d+'</small></button>').join(''):'<span class="mute">ไม่มีการ์ด</span>')+'</div></div>';
  }
  h+='<div><h2>บันทึกเหตุการณ์</h2><div class="log">'+G.log.slice(0,14).map(t=>'<div>'+esc(t)+'</div>').join('')+'</div></div>';
  $('side').innerHTML=h;
@@ -629,11 +658,19 @@ async function playCard(p,idx,bot){
  const c=p.hand[idx];if(!c||!canPay(p,c.cost))return false;
  const foes=G.players.filter(q=>q.alive&&!allies(q.id,p.id));
  let tgt=null,res=null,names=[];
- if(c.t==='lvl'){
+ if(c.t==='lvl'||c.t==='xp'){
   const ms=mine(p).filter(m=>m.lvl<5);
   if(!ms.length){if(!bot)await ask(p,sheet('ใช้ไม่ได้','ลูกน้องทุกคนเลเวลสูงสุดแล้ว',btn('ตกลง','ok')));return false}
   if(bot)tgt=ms.sort((a,b)=>b.lvl-a.lvl)[0];
   else{const v=await pickList('เลือกลูกน้องที่จะฝึก',ms.map(m=>({l:'['+m.tag+'] '+esc(m.name),v:m.id,d:'เลเวล '+m.lvl+' · ตำแหน่ง '+coord(m.pos)})),true,p);if(v==null)return false;tgt=ms.find(m=>m.id===+v)}
+ }
+ if((c.t==='tax'||c.t==='hexc')&&!foes.length)return false;
+ if(c.t==='lvlall'&&!mine(p).some(m=>m.lvl<5)){if(!bot)await ask(p,sheet('ใช้ไม่ได้','ลูกน้องทุกคนเลเวลสูงสุดแล้ว',btn('ตกลง','ok')));return false}
+ if(c.t==='rest'){
+  const ms=mine(p).filter(m=>m.moved);
+  if(!ms.length){if(!bot)await ask(p,sheet('ใช้ไม่ได้','ยังไม่มีลูกน้องที่เดินไปแล้ว',btn('ตกลง','ok')));return false}
+  if(bot)tgt=ms.sort((a,b)=>b.lvl-a.lvl)[0];
+  else{const v=await pickList('เลือกลูกน้องที่จะเดินอีกครั้ง',ms.map(m=>({l:'['+m.tag+'] '+esc(m.name),v:m.id,d:'เลเวล '+m.lvl+' · ตำแหน่ง '+coord(m.pos)})),true,p);if(v==null)return false;tgt=ms.find(m=>m.id===+v)}
  }
  if(c.t==='steal'){
   if(!foes.length)return false;
@@ -651,15 +688,23 @@ async function playCard(p,idx,bot){
   }
  }
  payRes(p,c.cost);
- p.hand.splice(idx,1);G.discard.push(c);
+ p.hand.splice(idx,1);p.discard.push(c);
  let note='';
- if(c.t==='spawn'){names.forEach(n=>{const pos=spawnPos(p);if(pos>=0){const mm=addMinion(p,n,pos);if(p.boss==='chief')mm.lvl=2}})}
+ if(c.t==='spawn'){names.forEach(n=>{const pos=spawnPos(p);if(pos>=0){const mm=addMinion(p,n,pos);if(p.boss==='chief')mm.lvl=2;if(c.lv)mm.lvl=Math.max(mm.lvl,c.lv)}})}
  else if(c.t==='lvl'){tgt.lvl=Math.min(5,tgt.lvl+1);tgt.wins=0;note=' (ฝึก '+tgt.name+')'}
  else if(c.t==='gain')addRes(p,c.g);
- else if(c.t==='steal'){const a=Math.min(4,tgt.res[res]);tgt.res[res]-=a;p.res[res]+=a;note=' (ชิง '+RN[res]+' '+a+' จาก '+tgt.name+')'}
+ else if(c.t==='steal'){const a=Math.min(c.v||4,tgt.res[res]);tgt.res[res]-=a;if(!c.nogain)p.res[res]+=a;note=' ('+(c.nogain?'ทำลาย ':'ชิง ')+RN[res]+' '+a+' จาก '+tgt.name+')'}
  else if(c.t==='grab'){grab(p,c.v)}
  else if(c.t==='scout'){G.scout=p.id}
  else if(c.t==='draw')draw(p,c.v);
+ else if(c.t==='xp'){let up='';for(let z=0;z<c.v&&tgt.lvl<5;z++)up=gainWin(tgt);note=' ('+tgt.name+' ชัยชนะ +'+c.v+up+')'}
+ else if(c.t==='lvlall'){mine(p).forEach(m=>{if(m.lvl<5){m.lvl++;m.wins=0}})}
+ else if(c.t==='rest'){tgt.moved=false;note=' ('+tgt.name+')'}
+ else if(c.t==='tax'){foes.forEach(q=>{const k=RK.slice().sort((a,b)=>q.res[b]-q.res[a])[0],a=Math.min(c.v,q.res[k]);q.res[k]-=a;p.res[k]+=a})}
+ else if(c.t==='hexc'){foes.forEach(q=>{for(let z=0;z<c.v&&q.hand.length;z++)q.discard.push(q.hand.splice(rnd(q.hand.length),1)[0])})}
+ else if(c.t==='inc'){for(let z=0;z<c.v;z++)income(p)}
+ if(c.t!=='gain'&&c.g)addRes(p,c.g);
+ if(c.dr)draw(p,c.dr);
  log(p.name+' เล่นการ์ด '+c.n+note);G.lastCard={c,by:p.id};
  checkEnd();
  return true;
@@ -693,7 +738,7 @@ async function useSkill(p,bot){
  }else if(p.boss==='copy'){
   const lc=G.lastCard;
   if(!lc||allies(lc.by,p.id))return deny('ยังไม่มีการ์ดของคู่แข่งให้ลอก');
-  p.hand.push(Object.assign({},lc.c,{cost:{},n:lc.c.n+' (ลอก)'}));log(p.name+' ลอกการ์ด '+lc.c.n+' ของ '+G.players[lc.by].name);
+  p.hand.push(Object.assign({},lc.c,{cost:{},cp:1,n:lc.c.n+' (ลอก)'}));log(p.name+' ลอกการ์ด '+lc.c.n+' ของ '+G.players[lc.by].name);
  }else if(p.boss==='booze'){
   const ms=mine(p).filter(m=>m.moved);
   if(!ms.length)return deny('ยังไม่มีลูกน้องที่เดินไปแล้ว');
@@ -735,11 +780,16 @@ function botPickCard(p){
  p.hand.forEach((c,i)=>{
   if(!canPay(p,c.cost))return;
   let s=0;
-  if(c.t==='spawn')s=ms.length<7?(c.v===2?9:8):2;
+  if(c.t==='spawn')s=ms.length<7?(c.v>=2?9:8)+(c.lv||0)*.3:2;
   else if(c.t==='lvl')s=ms.some(m=>m.lvl<5)?6:0;
-  else if(c.t==='grab')s=5;
+  else if(c.t==='grab')s=3+c.v;
   else if(c.t==='gain'){const gs=RK.reduce((a,k)=>a+(c.g[k]||0),0),cs=RK.reduce((a,k)=>a+(c.cost[k]||0),0);s=2+(c.g[low]?2:0)-(c.cost[low]?3:0)+(gs>cs?1:0)}
   else if(c.t==='draw')s=p.hand.length<=5?3.5:0;
+  else if(c.t==='xp')s=ms.some(m=>m.lvl<5)?5.5:0;
+  else if(c.t==='lvlall')s=ms.filter(m=>m.lvl<5).length>=3?7:2;
+  else if(c.t==='tax')s=foes.some(q=>RK.some(k=>q.res[k]>=3))?4.5:0;
+  else if(c.t==='hexc')s=foes.some(q=>q.hand.length>=4)?3.5:0;
+  else if(c.t==='inc')s=3.5;
   else if(c.t==='steal')s=foes.some(q=>RK.some(k=>q.res[k]>=4))?4:0;
   s+=Math.random()*.5;
   if(s>bs){bs=s;best=i}
@@ -789,7 +839,7 @@ async function botTurn(p){
 function discardTo6(p){
  while(p.hand.length>6){
   const i=p.hand.map((c,j)=>[RK.reduce((a,k)=>a+(c.cost[k]||0),0),j]).sort((a,b)=>a[0]-b[0])[0][1];
-  G.discard.push(p.hand.splice(i,1)[0]);
+  p.discard.push(p.hand.splice(i,1)[0]);
  }
 }
 async function takeTurn(p){
@@ -803,7 +853,7 @@ async function takeTurn(p){
   await ensureViewer(p);
   while(p.hand.length>6&&p.type!=='bot'){
    const v=await pickList('มือเกิน 6 ใบ เลือกการ์ดที่จะทิ้ง',p.hand.map((c,i)=>({l:c.n,v:i,d:c.d})),false,p);
-   G.discard.push(p.hand.splice(+v,1)[0]);
+   p.discard.push(p.hand.splice(+v,1)[0]);
   }
  }
  if(p.type==='human'||p.type==='remote'){
@@ -1257,7 +1307,7 @@ function viewFor(p){
   you:p.id,turn:G.turn,round:G.round,actor:G.actor,busy:!!G.busy,wait:G.wait||'',scout:G.scout===p.id?p.id:-1,mode:G.mode,size:N,
   over:G.over?{team:G.over.team,names:G.players.filter(q=>q.team===G.over.team).map(q=>q.name),reason:G.over.reason}:null,
   o:G.cells.map(c=>c.o),bases:G.cells.reduce((a,c,i)=>{if(c.b>=0)a.push([i,c.b]);return a},[]),
-  players:G.players.map(q=>({id:q.id,name:q.name,type:q.type==='bot'?'bot':'human',color:q.color,boss:q.boss,team:q.team,base:q.base,res:q.res,cd:q.cd||0,turns:q.turns||0,alive:q.alive,hand:q.id===p.id?q.hand.map(c=>Object.keys(c.cost).length?c.id:{id:c.id,n:c.n}):[],handN:q.hand.length})),
+  players:G.players.map(q=>({id:q.id,name:q.name,type:q.type==='bot'?'bot':'human',color:q.color,boss:q.boss,team:q.team,base:q.base,res:q.res,cd:q.cd||0,turns:q.turns||0,alive:q.alive,hand:q.id===p.id?q.hand.map(c=>Object.keys(c.cost).length?c.id:{id:c.id,n:c.n}):[],handN:q.hand.length,deckN:q.deck?q.deck.length:0})),
   minions,log:G.log.slice(0,14)
  };
 }
@@ -1334,9 +1384,62 @@ const WIN_COIN=50,LOSE_COIN=20,PULL_COST=100,PULL10_COST=900,PITY=200,UNLOCK_SHA
 const DAILY=[50,50,50,100,50,50,200];
 const GACHA_W={R:60,SR:30,SSR:10};
 const SAVE_KEY='mafiaturf.save.v1';
-const freshSave=()=>({coins:START_COIN,shards:{},owned:[],pity:0,pulls:0,last:'',streak:0,pending:0,starterDone:0,starterOffer:null});
+const freshSave=()=>({coins:START_COIN,shards:{},owned:[],pity:0,pulls:0,last:'',streak:0,pending:0,starterDone:0,starterOffer:null,cards:null,decks:{},shopHour:0,shopBought:[]});
 function loadSave(){try{const r=localStorage.getItem(SAVE_KEY);if(r)return Object.assign(freshSave(),JSON.parse(r))}catch(e){}return freshSave()}
 let SAVE=loadSave();
+function ensureCards(){
+ if(!SAVE.cards||typeof SAVE.cards!=='object'){SAVE.cards={};STARTER.forEach(i=>{SAVE.cards[i]=2})}
+ if(!SAVE.decks||typeof SAVE.decks!=='object')SAVE.decks={};
+ if(!Array.isArray(SAVE.shopBought))SAVE.shopBought=[];
+}
+ensureCards();
+const owns=id=>(SAVE.cards&&SAVE.cards[id])||0;
+const CAT=c=>c.t==='spawn'?'spawn':(c.t==='lvl'||c.t==='xp'||c.t==='lvlall')?'grow':(c.t==='gain'||c.t==='inc')?'eco':c.t==='grab'?'land':(c.t==='steal'||c.t==='tax'||c.t==='hexc')?'atk':c.t==='draw'?'draw':c.t==='scout'?'info':'mob';
+const TAGN={spawn:'เรียกลูกน้อง',grow:'อัปเลเวล',eco:'ทรัพยากร',land:'ขยายพื้นที่',atk:'โจมตีคู่แข่ง',draw:'จั่วการ์ด',info:'สอดแนม',mob:'เคลื่อนที่'};
+const BOSS_TAGS={banker:['eco','draw'],chief:['spawn','grow'],fixer:['eco','draw'],tiger:['grow','spawn'],hawk:['info','land'],nerve:['land','grow'],elbow:['grow','atk'],knee:['atk','land'],fire:['land','atk'],heist:['atk','eco'],mist:['land','spawn'],god:['grow','spawn'],heart:['atk','eco'],copy:['draw','atk'],peach:['eco','info'],booze:['land','mob']};
+const CAT_MIN={spawn:4,eco:4,land:3,grow:2},CAT_MAX={info:2,mob:2,draw:4,atk:5,spawn:7,eco:8,land:6,grow:5};
+const RAR_SC={C:0,R:.4,SR:.8,SSR:1.2};
+function cardScore(c,boss,jit){const cat=CAT(c);return((BOSS_TAGS[boss]||[]).includes(cat)?3:0)+({spawn:2.5,grow:2,eco:2,land:2,atk:1.5,draw:1.5,info:.6,mob:.6}[cat])+(RAR_SC[c.r]||0)+(jit?Math.random()*jit:0)}
+function autoDeck(boss,own,jit,keep){
+ const deck=(keep||[]).slice(),cnt={},cc={};
+ deck.forEach(i=>{cnt[i]=(cnt[i]||0)+1;const k=CAT(cardById(i));cc[k]=(cc[k]||0)+1});
+ const pool=CARDS.filter(c=>(own[c.id]||0)>0).map(c=>({c,s:cardScore(c,boss,jit)})).sort((a,b)=>b.s-a.s);
+ const can=(x,cap)=>(cnt[x.c.id]||0)<Math.min(2,own[x.c.id])&&(!cap||(cc[CAT(x.c)]||0)<(CAT_MAX[CAT(x.c)]||20));
+ const add=x=>{deck.push(x.c.id);cnt[x.c.id]=(cnt[x.c.id]||0)+1;const k=CAT(x.c);cc[k]=(cc[k]||0)+1};
+ for(const k in CAT_MIN)for(const x of pool)while(deck.length<20&&(cc[k]||0)<CAT_MIN[k]&&CAT(x.c)===k&&can(x,false))add(x);
+ for(const cap of [true,false])for(const x of pool)while(deck.length<20&&can(x,cap))add(x);
+ return deck;
+}
+function trimDeck(d,own){const cnt={},out=[];(d||[]).forEach(i=>{if(!cardById(i))return;cnt[i]=(cnt[i]||0)+1;if(cnt[i]<=Math.min(2,own[i]||0)&&out.length<20)out.push(i)});return out}
+function deckFor(boss){const d=SAVE.decks[boss];return Array.isArray(d)&&d.length?autoDeck(boss,SAVE.cards,0,trimDeck(d,SAVE.cards)):autoDeck(boss,SAVE.cards,0)}
+function starterOwn(){const o={};STARTER.forEach(i=>{o[i]=2});return o}
+function botOwn(){
+ const o=starterOwn();
+ shuffle(CARDS.filter(c=>!STARTER.includes(c.id)&&!c.nb&&c.r!=='SSR')).slice(0,6).forEach(c=>{o[c.id]=2});
+ return o;
+}
+function seatDeck(s){
+ if(s.type==='human')return deckFor(s.boss);
+ if(s.type==='remote')return autoDeck(s.boss,starterOwn(),0);
+ return autoDeck(s.boss,botOwn(),1.2);
+}
+/* ร้านการ์ด */
+const PRICE={C:40,R:90,SR:160,SSR:280},SHOP_N=20,HOUR=3600000;
+const shopHour=()=>Math.floor(Date.now()/HOUR);
+function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shopStock(h){
+ const rn=mulberry((h*2654435761)>>>0),W={C:3,R:2,SR:1.2,SSR:.6},pool=CARDS.filter(c=>!STARTER.includes(c.id)),out=[];
+ while(out.length<SHOP_N&&pool.length){const tot=pool.reduce((a,c)=>a+W[c.r],0);let x=rn()*tot,i=0;for(;i<pool.length-1;i++){x-=W[pool[i].r];if(x<=0)break}out.push(pool.splice(i,1)[0])}
+ const ord={SSR:0,SR:1,R:2,C:3};
+ return out.sort((a,b)=>ord[a.r]-ord[b.r]);
+}
+function shopSync(){const h=shopHour();if(SAVE.shopHour!==h){SAVE.shopHour=h;SAVE.shopBought=[];persist()}return h}
+function shopBuy(id){
+ const h=shopSync(),c=shopStock(h).find(x=>x.id===id);
+ if(!c||SAVE.shopBought.includes(id)||owns(id)>=2||SAVE.coins<PRICE[c.r])return false;
+ SAVE.coins-=PRICE[c.r];SAVE.cards[id]=owns(id)+2;SAVE.shopBought.push(id);persist();return true;
+}
+
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE))}catch(e){}}
 const gachaPool=()=>BOSSES.filter(b=>b.rar);
 const isOwned=id=>{const b=BOSSES.find(x=>x.id===id);return!!b&&(!b.rar||SAVE.owned.includes(id))};
@@ -1475,9 +1578,10 @@ async function gachaAct(a){
  renderGacha();
 }
 
-const SCREENS=['menu','rules','codex','lore','online','gacha','setup'];
+const SCREENS=['menu','rules','codex','lore','online','gacha','shop','deck','setup'];
 let codexTab='cards';
 function show(id){
+ try{clearInterval(shopT)}catch(e){}
  SCREENS.forEach(s=>{$(s).hidden=s!==id});$('game').hidden=true;
  if(id==='menu')renderMenu();
  if(id==='rules')renderRules();
@@ -1485,12 +1589,14 @@ function show(id){
  if(id==='lore')renderLore();
  if(id==='online')renderOnline();
  if(id==='gacha')renderGacha();
+ if(id==='shop')renderShop();
+ if(id==='deck')renderDeck();
  if(id==='setup')renderSetup();
  window.scrollTo(0,0);
 }
 const backBtn='<div><button class="btn" data-go="menu">← กลับเมนู</button></div>';
 function renderMenu(){
- const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['online','เล่นออนไลน์','สร้างห้อง ใส่เลข 5 หลัก เล่นกับเพื่อนคนละเครื่อง',1],['gacha','กาชา','สุ่มเศษลีดเดอร์ใหม่ 10 คน ปลดล็อกด้วยตังที่ได้จากการเล่น',0],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0],['lore','ประวัติตัวละคร','ชื่อ อายุ ความชอบ อริ อาชีพบังหน้า และประวัติโดยย่อของลีดเดอร์ทั้ง 6 คน',0]];
+ const T=[['setup','เล่นเกม','เลือกโหมด สี และมาเฟีย แล้วเริ่มวางอิทธิพล',1],['online','เล่นออนไลน์','สร้างห้อง ใส่เลข 5 หลัก เล่นกับเพื่อนคนละเครื่อง',1],['gacha','กาชา','สุ่มเศษลีดเดอร์ใหม่ 10 คน ปลดล็อกด้วยตังที่ได้จากการเล่น',0],['rules','กติกา','วิธีเล่น การปะทะ และเงื่อนไขชนะ',0],['codex','ข้อมูลการ์ดและลีดเดอร์','การ์ดทั้งหมด และความสามารถของมาเฟียแต่ละคน',0],['lore','ประวัติตัวละคร','ชื่อ อายุ ความชอบ อริ อาชีพบังหน้า และประวัติโดยย่อของลีดเดอร์ทั้ง 6 คน',0],['shop','ร้านการ์ด','ซื้อการ์ดใหม่ ร้านรีสต็อก 20 ใบทุกชั่วโมง ซื้อครั้งละ 2 ใบ'],['deck','จัดเด็ค','เด็ค 20 ใบ ซ้ำได้ไม่เกิน 2 พร้อมจัดอัตโนมัติให้เข้ากับลีดเดอร์']];
  $('menu').innerHTML='<div class="brand"><div class="logo" role="img" aria-label="Mafia Turf"></div><h1 class="hero">สงครามอิทธิพล</h1><p class="mute" style="max-width:52ch">ขยายอิทธิพลทีละช่อง สะสมกำลังคน ทรัพย์สิน และเส้นสายให้ครบอย่างละ 100 ก่อนใคร หรือล้อมฐานคู่แข่งให้จนมุม</p></div>'+
  '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ชนะ +'+WIN_COIN+' · แพ้ +'+LOSE_COIN+' ตัง ทุกโหมด</span></div><div class="tiles">'+T.map(t=>'<button class="tile'+(t[3]?' pri':'')+'" data-go="'+t[0]+'"><b>'+t[1]+'</b><span>'+t[2]+'</span></button>').join('')+'</div>';
 }
@@ -1503,12 +1609,13 @@ const RULES=[
  ['เลเวลลูกน้อง',['เลเวล 1 ถึง 5 อัปได้ด้วยการชนะการปะทะ: เลเวล 1→2 ต้องชนะ 2 ครั้ง 2→3 ชนะ 3 ครั้ง 3→4 ชนะ 4 ครั้ง 4→5 ชนะ 5 ครั้ง','หรืออัปด้วยการ์ดฝึกพิเศษ']],
  ['ล้อมฐาน',['ส่งลูกน้องไปยืนครบทุกช่องรอบฐานของคู่แข่งจนไม่มีทางออก คู่แข่งคนนั้นจะตกรอบทันที ลูกน้องและพื้นที่ของเขาจะหายไป']],
  ['สถานที่พิเศษ (โหมดหลัก 20×20)',['🏠 ฐานย่อย: ถ้าช่องนี้เป็นของคุณ ลูกน้องใหม่จะเกิดที่นี่แทนฐานหลัก (ถ้ายังว่าง) ศัตรูยึดได้','🏥 โรงพยาบาล: ลูกน้องที่แพ้การปะทะไม่ตาย แต่ถูกหามมาที่โรงพยาบาลที่ว่างใกล้ฐานตัวเองที่สุดและลด 1 เลเวล (เลเวล 1 ไม่ลด) ถ้าไม่มีที่ว่างจะตกรอบเหมือนเดิม','🎰 บ่อนคาสิโน: เจ้าของช่องได้ทรัพย์สิน +1 ทุกสิ้นเทิร์น','🥊 ค่ายฝึก: ลูกน้องที่ก้าวเข้าไปได้ชัยชนะสะสมเพิ่ม 1 ครั้ง (ค่ายพัก 3 รอบ)','🗼 หอสังเกตการณ์: ถ้าช่องนี้เป็นของคุณ จะเห็นลูกน้องศัตรูในระยะ 2 ช่อง','โหมด Mini 10×10: ไม่มีสถานที่พิเศษ ชนะเมื่อสะสมครบอย่างละ 50 และได้รายได้ทุก 5 ช่อง']],
+ ['เด็คและร้านการ์ด',['ทุกคนมีเด็คของตัวเอง 20 ใบ ใส่ซ้ำได้ไม่เกิน 2 ใบ และแต่ละลีดเดอร์มีเด็คแยกกัน (จัดได้ที่เมนู จัดเด็ค พร้อมปุ่มจัดอัตโนมัติ)','เด็คหมดแล้วระบบสับกองทิ้งกลับมาเป็นเด็คใหม่','การ์ดมีทั้งหมด 40 ชนิด เริ่มต้นมี 12 ชนิดชนิดละ 2 ใบ ที่เหลือซื้อที่ร้านการ์ดด้วยตัง ร้านรีสต็อก 20 ใบทุกชั่วโมง ซื้อครั้งหนึ่งได้ 2 ใบ','ผู้เล่นออนไลน์ที่เป็นแขกใช้เด็คอัตโนมัติจากการ์ดเริ่มต้น']],
  ['โหมดการเล่น',['1 vs บอท / 1 vs 1 / 2 vs 2 (ทีมมุมทแยงกัน) / FFA 4 คนต่างคนต่างสู้','เล่นหลายคนในเครื่องเดียวจะมีหน้าจอบังให้ส่งเครื่องต่อทุกครั้งที่เปลี่ยนผู้เล่น'] ]
 ];
 function renderRules(){
  $('rules').innerHTML=backBtn+'<div class="doc"><h1>กติกา</h1>'+RULES.map(r=>'<section><h2>'+r[0]+'</h2><ul>'+r[1].map(x=>'<li>'+x+'</li>').join('')+'</ul></section>').join('')+'</div>'+backBtn;
 }
-const TYPE_N={spawn:'เรียกลูกน้อง',lvl:'อัปเลเวล',gain:'แปลงทรัพยากร',steal:'ชิงทรัพยากร',grab:'ขยายพื้นที่',scout:'สอดแนม',draw:'จั่วการ์ด'};
+const TYPE_N={xp:'ฝึกซ้อม',lvlall:'ยกระดับทั้งแก๊ง',tax:'เก็บส่วย',hexc:'ป่วนวงใน',inc:'รับรายได้',rest:'ให้เดินอีกครั้ง',spawn:'เรียกลูกน้อง',lvl:'อัปเลเวล',gain:'แปลงทรัพยากร',steal:'ชิงทรัพยากร',grab:'ขยายพื้นที่',scout:'สอดแนม',draw:'จั่วการ์ด'};
 const BOSS_HINT={
  banker:'ทรัพย์สินใช้บ่อยในการ์ดเกณฑ์ลูกน้อง ช่วยขยายกองกำลังเร็ว',
  chief:'เหมาะกับสายกองทัพ เกณฑ์ลูกน้องแล้วส่งเข้าสนามได้เลย',
@@ -1532,14 +1639,62 @@ function renderCodex(){
  const tabs='<div class="row"><button class="btn'+(codexTab==='cards'?' on':'')+'" data-tab="cards">การ์ด ('+CARDS.length+' แบบ)</button><button class="btn'+(codexTab==='leaders'?' on':'')+'" data-tab="leaders">ลีดเดอร์มาเฟีย ('+BOSSES.length+' คน)</button></div>';
  let body;
  if(codexTab==='cards'){
-  body='<p class="mute">สำรับกลางมีการ์ดทั้งหมด '+CARDS.reduce((a,c)=>a+c.k*2,0)+' ใบ จำนวนในวงเล็บคือจำนวนใบของการ์ดแบบนั้น</p><div class="cgrid">'+CARDS.map(c=>'<div class="cx"><span class="tag">'+TYPE_N[c.t]+' · '+(c.k*2)+' ใบ</span><b>'+c.n+'</b><div class="cost">'+costChips(c.cost)+'</div><span>'+c.d+'</span></div>').join('')+'</div>';
+  body='<p class="mute">การ์ดทั้งหมด '+CARDS.length+' ชนิด · การ์ดเริ่มต้น 12 ชนิดมีให้ชนิดละ 2 ใบ ที่เหลือซื้อได้ที่ร้านการ์ด (ร้านรีทุกชั่วโมง)</p><div class="cgrid">'+CARDS.map(c=>'<div class="cx"><span class="tag">'+TYPE_N[c.t]+'</span> '+rarTag({rar:c.r})+'<b>'+c.n+'</b><div class="cost">'+costChips(c.cost)+'</div><span>'+c.d+'</span></div>').join('')+'</div>';
  }else{
   body='<p class="mute">เลือกลีดเดอร์ได้ตอนตั้งค่าเกม แต่ละคนมีความสามารถประจำตัวที่ทำงานตลอดเกม</p><div class="cgrid">'+BOSSES.map(b=>'<div class="cx lc"><div class="pt '+b.id+'" role="img" aria-label="'+b.n+'"></div><span class="tag">ความสามารถประจำตัว</span><b>'+b.n+' '+rarTag(b)+'</b><span>'+SK(b.id)+' '+b.d+'</span><span class="mute">'+BOSS_HINT[b.id]+'</span></div>').join('')+'</div>';
  }
  $('codex').innerHTML=backBtn+'<div><h1>การ์ดและลีดเดอร์</h1></div>'+tabs+body;
 }
+let shopT=null,deckBoss=null;
+const fmtCd=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function cardBox(c,extra,cls){return'<div class="cx'+(cls||'')+'"><div class="row"><span class="tag">'+TYPE_N[c.t]+'</span> '+rarTag({rar:c.r})+'</div><b>'+c.n+'</b><div class="cost">'+costChips(c.cost)+'</div><span>'+c.d+'</span>'+extra+'</div>'}
+function renderShop(){
+ const h=shopSync(),st=shopStock(h);
+ const items=st.map(c=>{
+  const sold=SAVE.shopBought.includes(c.id),have=owns(c.id),full=have>=2,pr=PRICE[c.r],poor=SAVE.coins<pr;
+  return cardBox(c,'<span class="mute">มีอยู่ '+have+' ใบ</span><button class="btn pri buy" data-s="buy" data-id="'+c.id+'"'+(sold||full||poor?' disabled':'')+'>'+(sold?'ซื้อแล้วในชั่วโมงนี้':full?'มีครบ 2 ใบแล้ว':'ซื้อ 2 ใบ · '+pr+' ตัง')+'</button>',sold||full?' sold':'');
+ }).join('');
+ $('shop').innerHTML=backBtn+'<div><h1>ร้านการ์ด</h1><p class="mute" style="max-width:62ch">ร้านมีการ์ด '+SHOP_N+' ใบ รีสต็อกใหม่ทุกชั่วโมง ซื้อหนึ่งครั้งได้การ์ดนั้น 2 ใบทันที ราคาตามความแรร์: ทั่วไป '+PRICE.C+' · หายาก '+PRICE.R+' · หายากมาก '+PRICE.SR+' · ตำนาน '+PRICE.SSR+' ตัง</p></div>'+
+  '<div class="wallet">'+coinHtml(SAVE.coins)+'<span class="mute">ร้านรีสต็อกในอีก <b id="shopcd">'+fmtCd((h+1)*HOUR-Date.now())+'</b></span></div><div class="cgrid">'+items+'</div>';
+ clearInterval(shopT);
+ shopT=setInterval(()=>{if($('shop').hidden){clearInterval(shopT);return}if(shopHour()!==h){renderShop();return}const e=$('shopcd');if(e)e.textContent=fmtCd((h+1)*HOUR-Date.now())},1000);
+}
+async function shopAct(id){
+ if(!shopBuy(id))return;
+ const c=cardById(id);
+ await modal(sheet('ซื้อสำเร็จ','<p>ได้ <b>'+c.n+'</b> เพิ่ม 2 ใบ (มีทั้งหมด '+owns(id)+' ใบ)</p><p class="mute">คงเหลือ '+SAVE.coins+' ตัง</p>',btn('ตกลง','ok',{pri:1})));
+ const y=window.scrollY;renderShop();window.scrollTo(0,y);
+}
+function curDeck(){if(!Array.isArray(SAVE.decks[deckBoss])){SAVE.decks[deckBoss]=deckFor(deckBoss);persist()}return SAVE.decks[deckBoss]}
+function renderDeck(){
+ const L=BOSSES.filter(b=>isOwned(b.id));
+ if(!deckBoss||!isOwned(deckBoss))deckBoss=L[0].id;
+ const d=curDeck(),cnt={};d.forEach(i=>{cnt[i]=(cnt[i]||0)+1});
+ const bo=BOSSES.find(b=>b.id===deckBoss),cat={};d.forEach(i=>{const k=CAT(cardById(i));cat[k]=(cat[k]||0)+1});
+ const sel='<div class="rsel">'+L.map(b=>'<button class="btn lsel'+(b.id===deckBoss?' on':'')+'" data-d="boss" data-k="'+b.id+'"><span class="ring sm" style="--rc:var(--brass)"><span class="av '+b.id+'"></span></span>'+esc(b.n)+'</button>').join('')+'</div>';
+ const ord=Object.keys(TAGN),own=CARDS.filter(c=>owns(c.id)>0).sort((a,b)=>ord.indexOf(CAT(a))-ord.indexOf(CAT(b)));
+ const grid=own.map(c=>{const n=cnt[c.id]||0,mx=Math.min(2,owns(c.id));
+  return cardBox(c,'<div class="qty"><button class="btn" data-d="dec" data-id="'+c.id+'"'+(n?'':' disabled')+' aria-label="เอาออก 1 ใบ">−</button><b>'+n+' / '+mx+'</b><button class="btn" data-d="inc" data-id="'+c.id+'"'+(n>=mx||d.length>=20?' disabled':'')+' aria-label="ใส่เพิ่ม 1 ใบ">＋</button></div>',n?'':' dim')}).join('');
+ const miss=CARDS.length-own.length;
+ $('deck').innerHTML=backBtn+'<div><h1>จัดเด็ค</h1><p class="mute" style="max-width:62ch">เด็คละ 20 ใบ ใส่การ์ดชนิดเดียวกันได้ไม่เกิน 2 ใบ แต่ละลีดเดอร์มีเด็คของตัวเอง ถ้าไม่ครบ 20 ตอนเริ่มเกมระบบจะเติมให้อัตโนมัติ</p></div>'+sel+
+  '<div class="seat"><div class="row" style="justify-content:space-between"><b class="dn">เด็คของ '+esc(bo.n)+'</b><b style="color:'+(d.length===20?'var(--cash)':'var(--brass)')+'">'+d.length+' / 20 ใบ</b></div>'+
+  '<p class="mute">ลีดเดอร์นี้เหมาะกับ: '+(BOSS_TAGS[deckBoss]||[]).map(k=>TAGN[k]).join(' · ')+'</p>'+
+  '<div class="row">'+Object.keys(cat).map(k=>'<span class="chip">'+TAGN[k]+' '+cat[k]+'</span>').join('')+'</div>'+
+  '<div class="row"><button class="btn pri" data-d="auto">จัดเด็คอัตโนมัติ</button><button class="btn" data-d="clear">ล้างเด็ค</button></div></div>'+
+  '<div class="cgrid">'+grid+'</div>'+(miss?'<p class="mute">ยังไม่มีอีก '+miss+' ชนิด ซื้อได้ที่ <button class="btn" data-go="shop">ร้านการ์ด</button></p>':'');
+}
+function deckAct(a,k,id){
+ if(a==='boss')deckBoss=k;
+ else if(a==='auto')SAVE.decks[deckBoss]=autoDeck(deckBoss,SAVE.cards,0);
+ else if(a==='clear')SAVE.decks[deckBoss]=[];
+ else if(a==='inc'){const d=curDeck();if(d.length<20&&d.filter(x=>x===id).length<Math.min(2,owns(id)))d.push(id)}
+ else if(a==='dec'){const d=curDeck(),i=d.indexOf(id);if(i>=0)d.splice(i,1)}
+ persist();const y=window.scrollY;renderDeck();window.scrollTo(0,y);
+}
 function bindMenu(){
  document.body.addEventListener('click',e=>{
+  const sx=e.target.closest('[data-s]');if(sx){if(!sx.disabled)shopAct(sx.dataset.id);return}
+  const dx=e.target.closest('[data-d]');if(dx){if(!dx.disabled)deckAct(dx.dataset.d,dx.dataset.k,dx.dataset.id);return}
   const gx=e.target.closest('[data-g]');if(gx){if(!gx.disabled)gachaAct(gx.dataset.g);return}
   const g=e.target.closest('[data-go]');if(g){show(g.dataset.go);return}
   const t=e.target.closest('[data-tab]');if(t){codexTab=t.dataset.tab;renderCodex();return}
